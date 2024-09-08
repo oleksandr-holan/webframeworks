@@ -1,47 +1,56 @@
-type Size = "small" | "large";
-type Topping = "chocolate" | "caramel" | "berries";
-type YesNo = "yes" | "no";
+enum Size {
+    Small = "small",
+    Large = "large"
+}
+
+enum Topping {
+    Chocolate = "chocolate",
+    Caramel = "caramel",
+    Berries = "berries"
+}
+
+enum YesNo {
+    Yes = "yes",
+    No = "no"
+}
+
+const SizeCosts = {
+    [Size.Small]: 10,
+    [Size.Large]: 25
+}
+
+const ToppingCosts = {
+    [Topping.Chocolate]: 5,
+    [Topping.Caramel]: 6,
+    [Topping.Berries]: 10
+}
+
+const MarshmallowCost = 5;
 
 function calculateIceCreamCost(size: Size, toppings: Topping[], addMarshmallow: YesNo): number {
-    let cost = 0;
-
-    if (size === "small") {
-        cost += 10;
-    } else if (size === "large") {
-        cost += 25;
-    }
+    let cost = SizeCosts[size];
 
     toppings.forEach((topping) => {
-        switch (topping) {
-            case "chocolate":
-                cost += 5;
-                break;
-            case "caramel":
-                cost += 6;
-                break;
-            case "berries":
-                cost += 10;
-                break;
-        }
+        cost += ToppingCosts[topping];
     });
 
-    if (addMarshmallow === "yes") {
-        cost += 5;
+    if (addMarshmallow === YesNo.Yes) {
+        cost += MarshmallowCost;
     }
 
     return cost;
 }
 
 function isSize(input: string): input is Size {
-    return input === "small" || input === "large";
+    return Object.values(Size).includes(input as Size);
 }
 
 function isTopping(input: string): input is Topping {
-    return input === "chocolate" || input === "caramel" || input === "berries";
+    return Object.values(Topping).includes(input as Topping);
 }
 
 function isYesNo(input: string): input is YesNo {
-    return input === "yes" || input === "no";
+    return Object.values(YesNo).includes(input as YesNo);
 }
 
 let sizeInput: string | null;
@@ -56,8 +65,7 @@ while (true) {
         alert("Please, say something, I can't read your mind");
         continue;
     }
-
-    sizeInput = sizeInput.toLowerCase()
+    sizeInput = sizeInput.toLowerCase().trim()
     if (!isSize(sizeInput)) {
         alert("Sorry, we don't have such cup size");
         continue;
@@ -73,7 +81,7 @@ while (true) {
         continue;
     }
 
-    toppingsArray = toppingsInput.toLowerCase().split(', ')
+    toppingsArray = toppingsInput.toLowerCase().split(',').map(topping => topping.trim())
     if (!toppingsArray.every(isTopping)) {
         alert("Sorry, we don't have all this toppings right now. Please, choose available ones");
         continue;
@@ -95,7 +103,7 @@ while (true) {
         continue;
     }
 
-    marshmallowInput = marshmallowInput.toLowerCase();
+    marshmallowInput = marshmallowInput.toLowerCase().trim();
     if (!isYesNo(marshmallowInput)) {
         alert("Sorry, I didn't understand you");
         continue;
