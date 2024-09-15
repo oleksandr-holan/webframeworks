@@ -1,23 +1,22 @@
 {
-  "name": "lab3",
+  "name": "lab-app",
   "version": "1.0.0",
-  "description": "Lab 3",
-  "main": "index.js",
+  "description": "",
+  "main": "webpack.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "start": "webpack serve --open"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oleksandr-holan/webframeworks.git"
   },
-  "author": "Oleksandr Holan",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/oleksandr-holan/webframeworks/issues"
-  },
-  "homepage": "https://github.com/oleksandr-holan/webframeworks#readme",
-  "dependencies": {
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+  "private": true,
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0"
   }
 }
