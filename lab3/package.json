@@ -1,0 +1,23 @@
+{
+  "name": "lab3",
+  "version": "1.0.0",
+  "description": "Lab 3",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oleksandr-holan/webframeworks.git"
+  },
+  "author": "Oleksandr Holan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oleksandr-holan/webframeworks/issues"
+  },
+  "homepage": "https://github.com/oleksandr-holan/webframeworks#readme",
+  "dependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
