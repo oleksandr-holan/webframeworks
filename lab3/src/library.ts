@@ -5,6 +5,10 @@ export class Library<T> {
     return this._items;
   }
 
+  constructor(items: T[]) {
+    this._items = items
+  }
+
   add(item: T): void {
     this.items.push(item);
   }

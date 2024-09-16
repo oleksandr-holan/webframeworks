@@ -1,29 +1,47 @@
 import { Book, User } from "./models";
 import { LibraryService } from "./services";
 import { Library } from "./library";
+import { Storage } from "./storage";
 
 class App {
-    private books: Library<Book>;
-    private users: User[];
-    private bookIdCounter: number;
-    private userIdCounter: number;
+    private books!: Library<Book>;
+    private users!: User[];
+    private bookIdCounter!: number;
+    private userIdCounter!: number;
     private bookList: HTMLElement;
     private userList: HTMLElement;
     private addBookForm: HTMLFormElement;
     private addUserForm: HTMLFormElement;
 
     constructor() {
-        this.books = new Library<Book>();
-        this.users = [];
-        this.bookIdCounter = 1;
-        this.userIdCounter = 1;
-
+        this.loadData();
+        
         this.bookList = document.getElementById("bookList")!;
         this.userList = document.getElementById("userList")!;
         this.addBookForm = document.getElementById("addBookForm") as HTMLFormElement;
         this.addUserForm = document.getElementById("addUserForm") as HTMLFormElement;
 
         this.initEventListeners();
+        this.renderBooks();
+        this.renderUsers();
+    }
+
+    private loadData(): void {
+        const savedBooks = Storage.load('books');
+        this.books = new Library<Book>(savedBooks || []);
+
+        const savedUsers = Storage.load('users');
+        this.users = savedUsers ? savedUsers.map((u: any) => new User(u.id, u.name, u.email, u.borrowedBooks)) : [];
+
+        this.bookIdCounter = Storage.load('bookIdCounter') || 1;
+        this.userIdCounter = Storage.load('userIdCounter') || 1;
+    }
+
+    private saveData(): void {
+        Storage.save('books', this.books.items);
+        Storage.save('users', this.users);
+        Storage.save('bookIdCounter', this.bookIdCounter);
+        Storage.save('userIdCounter', this.userIdCounter);
     }
 
     private initEventListeners(): void {
@@ -41,6 +59,7 @@ class App {
 
         this.books.add(newBook);
         this.renderBooks();
+        this.saveData();
 
         this.addBookForm.reset();
     }
@@ -53,6 +72,7 @@ class App {
         const newUser: User = new User(this.userIdCounter++, name, email);
         this.users.push(newUser);
         this.renderUsers();
+        this.saveData();
 
         this.addUserForm.reset();
     }
@@ -112,6 +132,7 @@ class App {
         LibraryService.borrowBook(book, user);
         alert(`${book.title} позичив користувач ${user.name}.`);
         this.renderBooks();
+        this.saveData();
     }
 
     private returnBook(bookId: number): void {
@@ -128,6 +149,7 @@ class App {
         LibraryService.returnBook(book, user);
         alert(`${book.title} повернено.`);
         this.renderBooks();
+        this.saveData();
     }
 }
 
