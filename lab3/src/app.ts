@@ -2,6 +2,7 @@ import { Book, User } from "./models";
 import { LibraryService } from "./services";
 import { Library } from "./library";
 import { Storage } from "./storage";
+import { Validation } from './validation';
 
 class App {
     private books!: Library<Book>;
@@ -51,30 +52,88 @@ class App {
 
     private handleAddBook(event: Event): void {
         event.preventDefault();
-        const title = (document.getElementById("bookTitle") as HTMLInputElement).value;
-        const author = (document.getElementById("bookAuthor") as HTMLInputElement).value;
-        const year = parseInt((document.getElementById("bookYear") as HTMLInputElement).value);
+        const titleInput = document.getElementById("bookTitle") as HTMLInputElement;
+        const authorInput = document.getElementById("bookAuthor") as HTMLInputElement;
+        const yearInput = document.getElementById("bookYear") as HTMLInputElement;
 
-        const newBook: Book = new Book(this.bookIdCounter++, title, author, year)
+        const titleError = Validation.BookValidator.validateTitle(titleInput.value);
+        const authorError = Validation.BookValidator.validateAuthor(authorInput.value);
+        const yearError = Validation.BookValidator.validateYear(yearInput.value);
 
+        if (titleError || authorError || yearError) {
+            this.showValidationErrors({
+                title: titleError,
+                author: authorError,
+                year: yearError
+            });
+            return;
+        }
+
+        const newBook: Book = {
+            id: this.bookIdCounter++,
+            title: titleInput.value,
+            author: authorInput.value,
+            year: parseInt(yearInput.value),
+            isBorrowed: false,
+        };
         this.books.add(newBook);
         this.renderBooks();
         this.saveData();
 
         this.addBookForm.reset();
+        this.clearValidationErrors();
     }
 
     private handleAddUser(event: Event): void {
         event.preventDefault();
-        const name = (document.getElementById("userName") as HTMLInputElement).value;
-        const email = (document.getElementById("userEmail") as HTMLInputElement).value;
+        const nameInput = document.getElementById("userName") as HTMLInputElement;
+        const emailInput = document.getElementById("userEmail") as HTMLInputElement;
 
-        const newUser: User = new User(this.userIdCounter++, name, email);
+        const nameError = Validation.UserValidator.validateName(nameInput.value);
+        const emailError = Validation.UserValidator.validateEmail(emailInput.value);
+
+        if (nameError || emailError) {
+            this.showValidationErrors({
+                name: nameError,
+                email: emailError
+            });
+            return;
+        }
+
+        const newUser: User = new User(this.userIdCounter++, nameInput.value, emailInput.value);
         this.users.push(newUser);
         this.renderUsers();
         this.saveData();
 
         this.addUserForm.reset();
+        this.clearValidationErrors();
+    }
+
+    private showValidationErrors(errors: { [key: string]: string | null }): void {
+        for (const [field, error] of Object.entries(errors)) {
+            const inputElement = document.getElementById(field) as HTMLInputElement;
+            const feedbackElement = inputElement.nextElementSibling as HTMLElement;
+            
+            if (error) {
+                inputElement.classList.add('is-invalid');
+                if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                    feedbackElement.textContent = error;
+                }
+            } else {
+                inputElement.classList.remove('is-invalid');
+            }
+        }
+    }
+
+    private clearValidationErrors(): void {
+        const inputs = this.addBookForm.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
+            const feedbackElement = input.nextElementSibling as HTMLElement;
+            if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                feedbackElement.textContent = '';
+            }
+        });
     }
 
     private renderBooks(): void {
