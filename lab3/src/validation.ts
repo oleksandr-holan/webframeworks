@@ -4,7 +4,7 @@ export namespace Validation {
     export class BookValidator {
         static validateTitle(title: string): string | null {
             if (!title.trim()) {
-                return "Уведіть назва книгу";
+                return "Уведіть назву книги";
             }
             return null;
         }

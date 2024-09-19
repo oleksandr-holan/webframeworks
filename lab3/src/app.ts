@@ -60,28 +60,28 @@ class App {
         const authorError = Validation.BookValidator.validateAuthor(authorInput.value);
         const yearError = Validation.BookValidator.validateYear(yearInput.value);
 
+        this.showValidationErrors({
+            bookTitle: titleError,
+            bookAuthor: authorError,
+            bookYear: yearError
+        });
+
         if (titleError || authorError || yearError) {
-            this.showValidationErrors({
-                title: titleError,
-                author: authorError,
-                year: yearError
-            });
             return;
         }
 
-        const newBook: Book = {
-            id: this.bookIdCounter++,
-            title: titleInput.value,
-            author: authorInput.value,
-            year: parseInt(yearInput.value),
-            isBorrowed: false,
-        };
+        const newBook: Book = new Book(
+            this.bookIdCounter++,
+            titleInput.value,
+            authorInput.value,
+            parseInt(yearInput.value),
+            false,
+        );
         this.books.add(newBook);
         this.renderBooks();
         this.saveData();
 
         this.addBookForm.reset();
-        this.clearValidationErrors();
     }
 
     private handleAddUser(event: Event): void {
@@ -92,11 +92,12 @@ class App {
         const nameError = Validation.UserValidator.validateName(nameInput.value);
         const emailError = Validation.UserValidator.validateEmail(emailInput.value);
 
+        this.showValidationErrors({
+            userName: nameError,
+            userEmail: emailError
+        });
+
         if (nameError || emailError) {
-            this.showValidationErrors({
-                name: nameError,
-                email: emailError
-            });
             return;
         }
 
@@ -106,14 +107,13 @@ class App {
         this.saveData();
 
         this.addUserForm.reset();
-        this.clearValidationErrors();
     }
 
     private showValidationErrors(errors: { [key: string]: string | null }): void {
         for (const [field, error] of Object.entries(errors)) {
             const inputElement = document.getElementById(field) as HTMLInputElement;
             const feedbackElement = inputElement.nextElementSibling as HTMLElement;
-            
+
             if (error) {
                 inputElement.classList.add('is-invalid');
                 if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
@@ -121,19 +121,9 @@ class App {
                 }
             } else {
                 inputElement.classList.remove('is-invalid');
-            }
-        }
-    }
-
-    private clearValidationErrors(): void {
-        const inputs = this.addBookForm.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.classList.remove('is-invalid');
-            const feedbackElement = input.nextElementSibling as HTMLElement;
-            if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
                 feedbackElement.textContent = '';
             }
-        });
+        }
     }
 
     private renderBooks(): void {
