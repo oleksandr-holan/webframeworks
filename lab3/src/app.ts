@@ -3,6 +3,8 @@ import { LibraryService } from "./services";
 import { Library } from "./library";
 import { Storage } from "./storage";
 import { Validation } from './validation';
+import { Modal } from 'bootstrap';
+
 
 class App {
     private books!: Library<Book>;
@@ -13,14 +15,19 @@ class App {
     private userList: HTMLElement;
     private addBookForm: HTMLFormElement;
     private addUserForm: HTMLFormElement;
+    private borrowBookModal: Modal;
+    private alertModal: Modal;
 
     constructor() {
         this.loadData();
-        
+
         this.bookList = document.getElementById("bookList")!;
         this.userList = document.getElementById("userList")!;
         this.addBookForm = document.getElementById("addBookForm") as HTMLFormElement;
         this.addUserForm = document.getElementById("addUserForm") as HTMLFormElement;
+
+        this.borrowBookModal = new Modal(document.getElementById('borrowBookModal')!);
+        this.alertModal = new Modal(document.getElementById('alertModal')!);
 
         this.initEventListeners();
         this.renderBooks();
@@ -48,6 +55,8 @@ class App {
     private initEventListeners(): void {
         this.addBookForm.addEventListener("submit", this.handleAddBook.bind(this));
         this.addUserForm.addEventListener("submit", this.handleAddUser.bind(this));
+
+        document.getElementById('borrowBookConfirmBtn')!.addEventListener('click', this.confirmBorrowBook.bind(this));
     }
 
     private handleAddBook(event: Event): void {
@@ -169,36 +178,57 @@ class App {
     private borrowBook(bookId: number): void {
         const book = this.books.find((b) => b.id === bookId);
         if (!book) {
-            alert("Книгу не знайдено");
+            this.showAlert("Книгу не знайдено");
             return;
         }
-        const userId = prompt("Введіть ID користувача, який позичає книгу:");
-        const user = this.users.find((u) => u.id === parseInt(userId!));
+
+        const borrowUserIdInput = document.getElementById("borrowUserId") as HTMLInputElement;
+        borrowUserIdInput.value = ""; // Reset input
+        this.borrowBookModal.show();
+
+        // Store book ID temporarily
+        (document.getElementById("borrowBookConfirmBtn") as HTMLButtonElement).setAttribute("data-book-id", bookId.toString());
+    }
+
+    private confirmBorrowBook(): void {
+        const bookId = parseInt((document.getElementById("borrowBookConfirmBtn") as HTMLButtonElement).getAttribute("data-book-id")!);
+        const book = this.books.find((b) => b.id === bookId);
+        const userId = (document.getElementById("borrowUserId") as HTMLInputElement).value;
+        const user = this.users.find((u) => u.id === parseInt(userId));
+
         if (!user) {
-            alert("Користувача не знайдено.");
+            this.showAlert("Користувача не знайдено.");
             return;
         }
-        LibraryService.borrowBook(book, user);
-        alert(`${book.title} позичив користувач ${user.name}.`);
+
+        LibraryService.borrowBook(book!, user);
+        this.showAlert(`${book!.title} позичив користувач ${user.name}.`);
         this.renderBooks();
         this.saveData();
+        this.borrowBookModal.hide();
     }
 
     private returnBook(bookId: number): void {
         const book = this.books.find((b) => b.id === bookId);
         if (!book) {
-            alert("Книгу не знайдено.");
+            this.showAlert("Книгу не знайдено.");
             return;
         }
         const user = this.users.find((u) => u.borrowedBooks.includes(book.id));
         if (!user) {
-            alert("Користувача, який позичив книгу, не знайдено");
+            this.showAlert("Користувача, який позичив книгу, не знайдено");
             return;
         }
         LibraryService.returnBook(book, user);
-        alert(`${book.title} повернено.`);
+        this.showAlert(`${book.title} повернено.`);
         this.renderBooks();
         this.saveData();
+    }
+
+    private showAlert(message: string): void {
+        const alertModalBody = document.getElementById("alertModalBody")!;
+        alertModalBody.textContent = message;
+        this.alertModal.show();
     }
 }
 
