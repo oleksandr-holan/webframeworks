@@ -74,22 +74,22 @@
       </div>
     </div>
 
-  <!-- Borrow Book Modal -->
-  <div class="modal fade" id="borrowBookModal" tabindex="-1" aria-labelledby="borrowBookModalLabel" aria-hidden="true">
+  <!-- Prompt Modal -->
+  <div class="modal fade" id="promptModal" tabindex="-1" aria-labelledby="promptModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="borrowBookModalLabel">Позичити книгу</h5>
+                <h5 class="modal-title" id="promptModalLabel">Запит</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>Введіть ID користувача, який позичає книгу:</p>
-                <input type="text" id="borrowUserId" class="form-control" placeholder="ID користувача">
+            <div class="modal-body" id="promptModalBody">
+                <!-- Message will be inserted with js -->
+                <input type="text" id="promptModalText" class="form-control" placeholder="Відповідь...">
                 <div class="invalid-feedback"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" id="borrowBookConfirmBtn">Позичити</button>
+                <button type="button" class="btn btn-primary" id="promptConfirmBtn">Підтвердити</button>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="alertModalBody">
-                <!-- Message will be inserted here -->
+                <!-- Message will be inserted with js -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Закрити</button>
