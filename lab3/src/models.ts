@@ -1,41 +1,67 @@
 export interface IBook {
-    id: number;
-    title: string;
-    author: string;
-    year: number;
-    isBorrowed: boolean;
+  id: string;
+  title: string;
+  author: string;
+  year: number;
+  isBorrowed: boolean;
+  borrowedBy: string | null;
+  borrowBook(user_id: string): void;
+  returnBook(): void;
 }
 
 export class Book implements IBook {
-    constructor(
-        public id: number,
-        public title: string,
-        public author: string,
-        public year: number,
-        public isBorrowed: boolean = false
-    ) {}
+  id: string;
+  title: string;
+  author: string;
+  year: number;
+  isBorrowed: boolean;
+  borrowedBy: string | null;
+  constructor({ id, title, author, year, }: IBook) {
+    this.id = id;
+    this.title = title;
+    this.author = author;
+    this.year = year;
+    this.isBorrowed = false;
+    this.borrowedBy = null;
+  }
+
+  borrowBook(user_id: string): void {
+    this.borrowedBy = user_id;
+    this.isBorrowed = true;
+  }
+
+  returnBook(): void {
+    this.borrowedBy = null;
+    this.isBorrowed = false;
+  }
 }
 
 export interface IUser {
-    id: number;
-    name: string;
-    email: string;
-    borrowedBooks: number[];
+  id: string;
+  name: string;
+  email: string;
+  borrowedBooks: string[];
+  borrowBook(book_id: string): void;
+  returnBook(book_id: string): void;
 }
 
 export class User implements IUser {
-    constructor(
-        public id: number,
-        public name: string,
-        public email: string,
-        public borrowedBooks: number[] = []
-    ) {}
+  id: string;
+  name: string;
+  email: string;
+  borrowedBooks: string[];
+  constructor({ id, name, email }: IUser) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+    this.borrowedBooks = [];
+  }
 
-    borrowBook(book_id: number): void {
-        this.borrowedBooks.push(book_id);
-    }
+  borrowBook(book_id: string): void {
+    this.borrowedBooks.push(book_id);
+  }
 
-    returnBook(book_id: number): void {
-        this.borrowedBooks = this.borrowedBooks.filter((id) => id !== book_id);
-    }
+  returnBook(book_id: string): void {
+    this.borrowedBooks = this.borrowedBooks.filter((id) => id !== book_id);
+  }
 }
