@@ -1,18 +1,18 @@
 export class Storage {
-    static save(key: string, data: any): void {
+    setItem(key: string, data: any): void {
         localStorage.setItem(key, JSON.stringify(data));
     }
 
-    static load(key: string): any {
+    getItem(key: string): any {
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;
     }
 
-    static remove(key: string): void {
+    removeItem(key: string): void {
         localStorage.removeItem(key);
     }
 
-    static clear(): void {
+    clear(): void {
         localStorage.clear();
     }
 }
