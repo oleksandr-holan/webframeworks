@@ -71,8 +71,6 @@ export class PromptModal extends AlertModal {
     }
 
 
-    // show(message: string): void;
-    // show(message: string, btnPrimaryListener: (this: HTMLButtonElement, ev: MouseEvent) => any): void;
     show(message: string): void {
         this.clearInput();
         super.show(message);
