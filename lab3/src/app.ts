@@ -3,7 +3,6 @@ import { LibraryService } from "./services";
 import { Library } from "./library";
 import { Storage } from "./storage";
 import { Validation } from './validation';
-import { Modal } from 'bootstrap';
 import { AlertModal, PromptModal} from './modal'
 
 
@@ -17,8 +16,6 @@ class App {
     private userList: HTMLElement;
     private addBookForm: HTMLFormElement;
     private addUserForm: HTMLFormElement;
-    // private borrowBookModal: Modal;
-    // private alertModal: Modal;
     private promptModal: PromptModal;
     private alertModal: AlertModal;
 
@@ -46,9 +43,6 @@ class App {
             '.btn-primary'
             
         );
-
-        // this.borrowBookModal = new Modal(document.getElementById('borrowBookModal')!);
-        // this.alertModal = new Modal(document.getElementById('alertModal')!);
 
         this.initEventListeners();
         this.renderBooks();
@@ -194,20 +188,14 @@ class App {
         });
     }
 
-    private borrowBook(bookId: number): void {
+    private borrowBook(bookId: string): void {
         const book = this.books.find((b) => b.id === bookId);
         if (!book) {
             this.alertModal.show("Книгу не знайдено")
-            // this.showAlert("Книгу не знайдено");
             return;
         }
 
-        // const borrowUserIdInput = document.getElementById("borrowUserId") as HTMLInputElement;
-        // borrowUserIdInput.value = ""; // Reset input
-        // this.borrowBookModal.show();
-
         this.promptModal.setAction(this.confirmBorrowBook.bind(this)).show("Введіть ID користувача, який позичає книгу:");
-
         // Store book ID temporarily
         this.promptModal.setDataAttribute(bookId.toString(), "data-book-id");
     }
@@ -229,7 +217,6 @@ class App {
         this.alertModal.show(`${book!.title} позичив користувач ${user.name}.`);
         this.renderBooks();
         this.saveData();
-        // this.alertModalWrapped.hide();
     }
 
     private returnBook(bookId: number): void {
@@ -248,12 +235,6 @@ class App {
         this.renderBooks();
         this.saveData();
     }
-
-    // private showAlert(message: string): void {
-    //     const alertModalBody = document.getElementById("alertModalBody")!;
-    //     alertModalBody.textContent = message;
-    //     this.alertModal.show();
-    // }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
