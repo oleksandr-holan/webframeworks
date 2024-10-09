@@ -1,13 +1,20 @@
-export interface IBook {
-  id: string;
+interface Id {
+    id: string
+}
+
+export interface IBookProps {
   title: string;
   author: string;
   year: number;
+}
+
+export interface IBook extends IBookProps, Id {
   isBorrowed: boolean;
   borrowedBy: string | null;
   borrowBook(user_id: string): void;
   returnBook(): void;
 }
+
 
 export class Book implements IBook {
   id: string;
@@ -16,7 +23,7 @@ export class Book implements IBook {
   year: number;
   isBorrowed: boolean;
   borrowedBy: string | null;
-  constructor({ id, title, author, year, }: IBook) {
+  constructor({ id, title, author, year, }: IBookProps & Id) {
     this.id = id;
     this.title = title;
     this.author = author;
@@ -36,21 +43,24 @@ export class Book implements IBook {
   }
 }
 
-export interface IUser {
-  id: string;
+export interface IUserProps {
   name: string;
   email: string;
+}
+
+export interface IUser extends IUserProps, Id {
   borrowedBooks: string[];
   borrowBook(book_id: string): void;
   returnBook(book_id: string): void;
 }
+
 
 export class User implements IUser {
   id: string;
   name: string;
   email: string;
   borrowedBooks: string[];
-  constructor({ id, name, email }: IUser) {
+  constructor({ id, name, email }: IUserProps & Id) {
     this.id = id;
     this.name = name;
     this.email = email;

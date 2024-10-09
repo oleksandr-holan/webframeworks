@@ -1,28 +1,28 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-    devtool: 'source-map',
-    entry: './src/app.ts',
+    devtool: "source-map",
+    entry: "./src/app.ts",
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                use: 'ts-loader',
+                use: "ts-loader",
                 exclude: /node_modules/,
             },
         ],
     },
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: [".ts", ".js"],
     },
     output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist'),
+        filename: "bundle.js",
+        path: path.resolve(__dirname, "dist"),
     },
-    mode: 'development',
+    mode: "development",
     devServer: {
         static: {
-            directory: path.join(__dirname, '/'),
+            directory: path.join(__dirname, "/"),
         },
         compress: true,
         port: 9000,

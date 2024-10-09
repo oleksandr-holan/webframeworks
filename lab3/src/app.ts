@@ -1,17 +1,14 @@
-import { Book, User } from "./models";
+import { IBook, IUser } from "./models";
 import { LibraryService } from "./services";
-import { Library } from "./library";
 import { Storage } from "./storage";
-import { Validation } from './validation';
-import { AlertModal, PromptModal} from './modal'
-
-
+import { Validation } from "./validation";
+import { AlertModal, PromptModal } from "./modal";
+import { LibraryServiceError } from "./errors";
+import { error } from "console";
 
 class App {
-    private books!: Library<Book>;
-    private users!: User[];
-    private bookIdCounter!: number;
-    private userIdCounter!: number;
+    private library: LibraryService;
+    private storage: Storage;
     private bookList: HTMLElement;
     private userList: HTMLElement;
     private addBookForm: HTMLFormElement;
@@ -20,28 +17,32 @@ class App {
     private alertModal: AlertModal;
 
     constructor() {
-        this.loadData();
+        this.storage = Storage.getInstance();
 
-        this.bookList = document.getElementById("bookList")!;
-        this.userList = document.getElementById("userList")!;
-        this.addBookForm = document.getElementById("addBookForm") as HTMLFormElement;
-        this.addUserForm = document.getElementById("addUserForm") as HTMLFormElement;
+        this.library = new LibraryService(this.storage);
+
+        this.bookList = document.getElementById("bookList") as HTMLElement;
+        this.userList = document.getElementById("userList") as HTMLElement;
+        this.addBookForm = document.getElementById(
+            "addBookForm"
+        ) as HTMLFormElement;
+        this.addUserForm = document.getElementById(
+            "addUserForm"
+        ) as HTMLFormElement;
 
         this.promptModal = new PromptModal(
-            'promptModal', 
-            '.modal-title',
-            '.modal-body',
-            'input',
-            '.btn-primary',
-            '.btn-secondary'
-            
+            "promptModal",
+            ".modal-title",
+            ".modal-body",
+            "input",
+            ".btn-primary",
+            ".btn-secondary"
         );
         this.alertModal = new AlertModal(
-            'alertModal', 
-            '.modal-title',
-            '.modal-body',
-            '.btn-primary'
-            
+            "alertModal",
+            ".modal-title",
+            ".modal-body",
+            ".btn-primary"
         );
 
         this.initEventListeners();
@@ -49,115 +50,131 @@ class App {
         this.renderUsers();
     }
 
-    private loadData(): void {
-        const savedBooks = Storage.load('books');
-        this.books = new Library<Book>(savedBooks || []);
-
-        const savedUsers = Storage.load('users');
-        this.users = savedUsers ? savedUsers.map((u: any) => new User(u.id, u.name, u.email, u.borrowedBooks)) : [];
-
-        this.bookIdCounter = Storage.load('bookIdCounter') || 1;
-        this.userIdCounter = Storage.load('userIdCounter') || 1;
-    }
-
-    private saveData(): void {
-        Storage.save('books', this.books.items);
-        Storage.save('users', this.users);
-        Storage.save('bookIdCounter', this.bookIdCounter);
-        Storage.save('userIdCounter', this.userIdCounter);
-    }
-
     private initEventListeners(): void {
-        this.addBookForm.addEventListener("submit", this.handleAddBook.bind(this));
-        this.addUserForm.addEventListener("submit", this.handleAddUser.bind(this));
+        this.addBookForm.addEventListener(
+            "submit",
+            this.handleAddBook.bind(this)
+        );
+        this.addUserForm.addEventListener(
+            "submit",
+            this.handleAddUser.bind(this)
+        );
     }
 
     private handleAddBook(event: Event): void {
         event.preventDefault();
-        const titleInput = document.getElementById("bookTitle") as HTMLInputElement;
-        const authorInput = document.getElementById("bookAuthor") as HTMLInputElement;
-        const yearInput = document.getElementById("bookYear") as HTMLInputElement;
+        const titleInput = document.getElementById(
+            "bookTitle"
+        ) as HTMLInputElement;
+        const authorInput = document.getElementById(
+            "bookAuthor"
+        ) as HTMLInputElement;
+        const yearInput = document.getElementById(
+            "bookYear"
+        ) as HTMLInputElement;
 
-        const titleError = Validation.BookValidator.validateTitle(titleInput.value);
-        const authorError = Validation.BookValidator.validateAuthor(authorInput.value);
-        const yearError = Validation.BookValidator.validateYear(yearInput.value);
+        const titleError = Validation.BookValidator.validateTitle(
+            titleInput.value
+        );
+        const authorError = Validation.BookValidator.validateAuthor(
+            authorInput.value
+        );
+        const yearError = Validation.BookValidator.validateYear(
+            yearInput.value
+        );
 
         this.showValidationErrors({
             bookTitle: titleError,
             bookAuthor: authorError,
-            bookYear: yearError
+            bookYear: yearError,
         });
 
         if (titleError || authorError || yearError) {
             return;
         }
 
-        const newBook: Book = new Book(
-            this.bookIdCounter++,
-            titleInput.value,
-            authorInput.value,
-            parseInt(yearInput.value),
-            false,
-        );
-        this.books.add(newBook);
+        this.library.createBook({
+            title: titleInput.value,
+            author: authorInput.value,
+            year: parseInt(yearInput.value),
+        });
         this.renderBooks();
-        this.saveData();
-
         this.addBookForm.reset();
     }
 
     private handleAddUser(event: Event): void {
         event.preventDefault();
-        const nameInput = document.getElementById("userName") as HTMLInputElement;
-        const emailInput = document.getElementById("userEmail") as HTMLInputElement;
+        const nameInput = document.getElementById(
+            "userName"
+        ) as HTMLInputElement;
+        const emailInput = document.getElementById(
+            "userEmail"
+        ) as HTMLInputElement;
 
-        const nameError = Validation.UserValidator.validateName(nameInput.value);
-        const emailError = Validation.UserValidator.validateEmail(emailInput.value);
+        const nameError = Validation.UserValidator.validateName(
+            nameInput.value
+        );
+        const emailError = Validation.UserValidator.validateEmail(
+            emailInput.value
+        );
 
         this.showValidationErrors({
             userName: nameError,
-            userEmail: emailError
+            userEmail: emailError,
         });
 
         if (nameError || emailError) {
             return;
         }
 
-        const newUser: User = new User(this.userIdCounter++, nameInput.value, emailInput.value);
-        this.users.push(newUser);
+        this.library.createUser({
+            name: nameInput.value,
+            email: emailInput.value,
+        });
         this.renderUsers();
-        this.saveData();
-
         this.addUserForm.reset();
     }
 
-    private showValidationErrors(errors: { [key: string]: string | null }): void {
+    private showValidationErrors(errors: {
+        [key: string]: string | null;
+    }): void {
         for (const [field, error] of Object.entries(errors)) {
-            const inputElement = document.getElementById(field) as HTMLInputElement;
-            const feedbackElement = inputElement.nextElementSibling as HTMLElement;
+            const inputElement = document.getElementById(
+                field
+            ) as HTMLInputElement;
+            const feedbackElement =
+                inputElement.nextElementSibling as HTMLElement;
 
             if (error) {
-                inputElement.classList.add('is-invalid');
-                if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                inputElement.classList.add("is-invalid");
+                if (
+                    feedbackElement &&
+                    feedbackElement.classList.contains("invalid-feedback")
+                ) {
                     feedbackElement.textContent = error;
                 }
             } else {
-                inputElement.classList.remove('is-invalid');
-                feedbackElement.textContent = '';
+                inputElement.classList.remove("is-invalid");
+                feedbackElement.textContent = "";
             }
         }
     }
 
     private renderBooks(): void {
         this.bookList.innerHTML = "";
-        this.books.items.forEach((book) => {
+        this.library.books.items.forEach((book) => {
             const bookItem = document.createElement("li");
-            bookItem.className = "list-group-item d-flex justify-content-between align-items-center";
+            bookItem.className =
+                "list-group-item d-flex justify-content-between align-items-center";
             bookItem.innerHTML = `
                 ${book.title} by ${book.author} (${book.year})
                 <div>
-                    <button class="btn btn-primary btn-sm borrow-btn" data-id="${book.id}" ${book.isBorrowed ? "disabled" : ""}>Позичити</button>
-                    <button class="btn btn-warning btn-sm return-btn" data-id="${book.id}" ${!book.isBorrowed ? "disabled" : ""}>Повернути</button>
+                    <button class="btn btn-primary btn-sm borrow-btn" data-id="${
+                        book.id
+                    }" ${book.isBorrowed ? "disabled" : ""}>Позичити</button>
+                    <button class="btn btn-warning btn-sm return-btn" data-id="${
+                        book.id
+                    }" ${!book.isBorrowed ? "disabled" : ""}>Повернути</button>
                 </div>
             `;
             this.bookList.appendChild(bookItem);
@@ -165,14 +182,19 @@ class App {
 
         document.querySelectorAll(".borrow-btn").forEach((button) => {
             button.addEventListener("click", (event) => {
-                const bookId = parseInt((event.target as HTMLButtonElement).getAttribute("data-id")!);
+                const bookId = (event.target as HTMLButtonElement).getAttribute(
+                    "data-id"
+                )!;
                 this.borrowBook(bookId);
             });
         });
 
         document.querySelectorAll(".return-btn").forEach((button) => {
             button.addEventListener("click", (event) => {
-                const bookId = parseInt((event.target as HTMLButtonElement).getAttribute("data-id")!);
+                const bookId = (event.target as HTMLButtonElement).getAttribute(
+                    "data-id"
+                )!;
+
                 this.returnBook(bookId);
             });
         });
@@ -180,7 +202,7 @@ class App {
 
     private renderUsers(): void {
         this.userList.innerHTML = "";
-        this.users.forEach((user) => {
+        this.library.users.items.forEach((user) => {
             const userItem = document.createElement("li");
             userItem.className = "list-group-item";
             userItem.textContent = `${user.id} ${user.name} (${user.email})`;
@@ -188,55 +210,59 @@ class App {
         });
     }
 
-    private borrowBook(bookId: string): void {
-        const book = this.books.find((b) => b.id === bookId);
-        if (!book) {
-            this.alertModal.show("Книгу не знайдено")
-            return;
+    private async borrowBook(bookId: string): Promise<void> {
+        try {
+            const userId = await this.promptModal.show(
+                "Введіть ID користувача, який позичає книгу:"
+            );
+            await this.confirmBorrowBook(bookId, userId);
+        } catch (error) {
+            this.alertModal.show((error as Error).message);
         }
-
-        this.promptModal.setAction(this.confirmBorrowBook.bind(this)).show("Введіть ID користувача, який позичає книгу:");
-        // Store book ID temporarily
-        this.promptModal.setDataAttribute(bookId.toString(), "data-book-id");
     }
 
-    private confirmBorrowBook(): void {
-        const bookId = parseInt(this.promptModal.getDataAttribute("data-book-id")!);
-        const book = this.books.find((b) => b.id === bookId)!;
-        const userId = parseInt(this.promptModal.getInputValue());
-        const user = this.users.find((u) => u.id === userId);
+    private async confirmBorrowBook(
+        bookId: string,
+        userId: string
+    ): Promise<void> {
+        let book: IBook;
+        let user: IUser;
 
-        if (!user) {
-            this.alertModal.show("Користувача не знайдено");
+        try {
+            book = this.library.getBookById(bookId);
+            user = this.library.getUserById(userId);
+            this.library.borrowBook(bookId, userId);
+        } catch (e) {
+            this.handleError(e);
             return;
         }
-
-        LibraryService.borrowBook(book, user);
-        
-        this.promptModal.hide();
-        this.alertModal.show(`${book!.title} позичив користувач ${user.name}.`);
+        this.alertModal.show(`${book.title} позичив користувач ${user.name}.`);
         this.renderBooks();
-        this.saveData();
     }
 
-    private returnBook(bookId: number): void {
-        const book = this.books.find((b) => b.id === bookId);
-        if (!book) {
-            this.alertModal.show("Книгу не знайдено.");
+    private returnBook(bookId: string): void {
+        let book: IBook;
+        try {
+            book = this.library.getBookById(bookId);
+            this.library.returnBook(bookId);
+        } catch (e) {
+            this.handleError(e);
             return;
         }
-        const user = this.users.find((u) => u.borrowedBooks.includes(book.id));
-        if (!user) {
-            this.alertModal.show("Користувача, який позичив книгу, не знайдено");
-            return;
-        }
-        LibraryService.returnBook(book, user);
         this.alertModal.show(`${book.title} повернено.`);
         this.renderBooks();
-        this.saveData();
+    }
+
+    private handleError(e: unknown): void {
+        if (e instanceof LibraryServiceError) {
+            this.alertModal.show(e.message);
+        } else {
+            this.alertModal.show("Щось пішло не так :(");
+            console.error(e);
+        }
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     new App();
 });

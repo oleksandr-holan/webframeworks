@@ -42,45 +42,64 @@ export class PromptModal extends AlertModal {
     private inputElement: HTMLInputElement;
     private btnSecondaryElement: HTMLButtonElement;
 
-
     constructor(
-        modalId: string, 
-        titleElementSelector: string, 
-        messageElementSelector: string, 
+        modalId: string,
+        titleElementSelector: string,
+        messageElementSelector: string,
         inputElementSelector: string,
         btnPrimaryElementSelector: string,
-        btnSecondaryElementSelector: string,
+        btnSecondaryElementSelector: string
     ) {
-        super(modalId, messageElementSelector, titleElementSelector, btnPrimaryElementSelector);
-        this.inputElement = this.querySelector(inputElementSelector)! as HTMLInputElement;
-        this.btnSecondaryElement = this.querySelector(btnSecondaryElementSelector)! as HTMLButtonElement;
+        super(
+            modalId,
+            messageElementSelector,
+            titleElementSelector,
+            btnPrimaryElementSelector
+        );
+        this.inputElement = this.querySelector(
+            inputElementSelector
+        )! as HTMLInputElement;
+        this.btnSecondaryElement = this.querySelector(
+            btnSecondaryElementSelector
+        )! as HTMLButtonElement;
     }
 
-    setAction(btnPrimaryListener: (this: HTMLButtonElement, ev: MouseEvent) => any): this {
-        this.btnPrimaryElement.addEventListener('click', btnPrimaryListener);
+    addBtnPrimaryEventListener(
+        btnPrimaryListener: (this: HTMLButtonElement, ev: MouseEvent) => any
+    ): this {
+        this.btnPrimaryElement.addEventListener("click", btnPrimaryListener);
         return this;
     }
 
-    setDataAttribute(data: string, name: string): this {
+    setBtnPrimaryDataAttribute(data: string, name: string): this {
         this.btnPrimaryElement.setAttribute(name, data);
         return this;
     }
 
-    getDataAttribute(name: string): string | null {
+    getBtnPrimaryDataAttribute(name: string): string | null {
         return this.btnPrimaryElement.getAttribute(name);
     }
 
-
-    show(message: string): void {
+    show(message: string): Promise<string> {
         this.clearInput();
         super.show(message);
+
+        return new Promise((resolve) => {
+            const confirmHandler = () => {
+                const inputValue = this.getInputValue();
+                this.hide();
+                resolve(inputValue);
+            };
+
+            this.addBtnPrimaryEventListener(confirmHandler);
+        });
     }
 
     clearInput(): this {
         if (this.inputElement) {
-            this.inputElement.value = '';
+            this.inputElement.value = "";
         }
-        return this
+        return this;
     }
 
     getInputValue(): string {
