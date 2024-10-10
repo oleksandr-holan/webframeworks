@@ -4,7 +4,6 @@ import { Storage } from "./storage";
 import { Validation } from "./validation";
 import { AlertModal, PromptModal } from "./modal";
 import { LibraryServiceError } from "./errors";
-import { error } from "console";
 
 class App {
     private library: LibraryService;
@@ -59,6 +58,15 @@ class App {
             "submit",
             this.handleAddUser.bind(this)
         );
+        const clearBooksBtn = document.getElementById(
+            "clearBooksBtn"
+        ) as HTMLButtonElement;
+        clearBooksBtn.addEventListener("click", this.clearBooks.bind(this));
+
+        const clearUsersBtn = document.getElementById(
+            "clearUsersBtn"
+        ) as HTMLButtonElement;
+        clearUsersBtn.addEventListener("click", this.clearUsers.bind(this));
     }
 
     private handleAddBook(event: Event): void {
@@ -260,6 +268,16 @@ class App {
             this.alertModal.show("Щось пішло не так :(");
             console.error(e);
         }
+    }
+
+    private clearBooks(): void {
+        this.library.clearBooks();
+        this.renderBooks();
+    }
+
+    private clearUsers(): void {
+        this.library.clearUsers();
+        this.renderUsers();
     }
 }
 

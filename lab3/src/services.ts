@@ -93,4 +93,16 @@ export class LibraryService {
         this.saveData();
         return newUser;
     }
+
+    clearBooks(): void {
+        this.bookIdCounter = 1;
+        this.books.clear();
+        this.saveData();
+    }
+
+    clearUsers(): void {
+        this.userIdCounter = 1;
+        this.users.clear();
+        this.saveData();
+    }
 }
