@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uk">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Система управління бібліотекою</title>
+        <link rel="stylesheet" href="libs/bootstrap.css" />
+    <script defer src="bundle.js"></script></head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center mb-4">Система Управління Бібліотекою</h1>
+
+            <!-- Add Book Form -->
+            <div class="card mb-4">
+                <div class="card-header">Додати Книгу</div>
+                <div class="card-body">
+                    <form id="addBookForm" novalidate>
+                        <div class="mb-3">
+                            <label for="bookTitle" class="form-label"
+                                >Назва книги</label
+                            >
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="bookTitle"
+                            />
+                            <div
+                                class="invalid-feedback"
+                                id="bookTitleFeedback"
+                            ></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookAuthor" class="form-label"
+                                >Автор</label
+                            >
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="bookAuthor"
+                            />
+                            <div
+                                class="invalid-feedback"
+                                id="bookAuthorFeedback"
+                            ></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookYear" class="form-label"
+                                >Рік видання</label
+                            >
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="bookYear"
+                            />
+                            <div
+                                class="invalid-feedback"
+                                id="bookYearFeedback"
+                            ></div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            Додати Книгу
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add User Form -->
+            <div class="card mb-4">
+                <div class="card-header">Додати Користувача</div>
+                <div class="card-body">
+                    <form id="addUserForm" novalidate>
+                        <div class="mb-3">
+                            <label for="userName" class="form-label"
+                                >Ім'я</label
+                            >
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="userName"
+                            />
+                            <div
+                                class="invalid-feedback"
+                                id="userNameFeedback"
+                            ></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label"
+                                >Email</label
+                            >
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="userEmail"
+                            />
+                            <div
+                                class="invalid-feedback"
+                                id="userEmailFeedback"
+                            ></div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            Додати Користувача
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Book List -->
+            <div class="card mb-4">
+                <div class="card-header">Список Книг</div>
+                <ul class="list-group list-group-flush" id="bookList">
+                    <!-- Book items will be added here dynamically -->
+                </ul>
+            </div>
+
+            <!-- User List -->
+            <div class="card mb-4">
+                <div class="card-header">Список Користувачів</div>
+                <ul class="list-group list-group-flush" id="userList">
+                    <!-- User items will be added here dynamically -->
+                </ul>
+            </div>
+            <!-- The clear buttons -->
+            <div class="mt-4">
+                <button id="clearBooksBtn" class="btn btn-danger">
+                    Clear Books
+                </button>
+                <button id="clearUsersBtn" class="btn btn-danger">
+                    Clear Users
+                </button>
+            </div>
+        </div>
+
+        <!-- Prompt Modal -->
+        <div
+            class="modal fade"
+            id="promptModal"
+            tabindex="-1"
+            aria-labelledby="promptModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="promptModalLabel">Запит</h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body" id="promptModalBody">
+                        <!-- Message will be inserted with js -->
+                        <input
+                            type="text"
+                            id="promptModalText"
+                            class="form-control"
+                            placeholder="Відповідь..."
+                        />
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Скасувати
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="promptConfirmBtn"
+                        >
+                            Підтвердити
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Modal -->
+        <div
+            class="modal fade"
+            id="alertModal"
+            tabindex="-1"
+            aria-labelledby="alertModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="alertModalLabel">
+                            Повідомлення
+                        </h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body" id="alertModalBody">
+                        <!-- Message will be inserted with js -->
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-bs-dismiss="modal"
+                        >
+                            Закрити
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <script src="bundle.js"></script> -->
+    </body>
+</html>
