@@ -12062,7 +12062,7 @@ textarea.form-control-lg {
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].use[2]!./libs/custom.css ***!
   \*****************************************************************************************************************************************/
 body {
-    font: 1rem/1.5 var(--bs-font-sans-serif);
+    font: 1rem/1.5 var(--bs-font-sans-serif) !important;
 }
 
 
