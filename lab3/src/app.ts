@@ -4,6 +4,7 @@ import { Storage } from "./storage";
 import { Validation } from "./validation";
 import { AlertModal, PromptModal } from "./modal";
 import { LibraryServiceError } from "./errors";
+import "../libs/bootstrap.css";
 
 class App {
     private library: LibraryService;

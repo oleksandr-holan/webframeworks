@@ -13,7 +13,7 @@ export interface IBookProps {
 export interface IBookManagedProps extends IBookProps, Id {}
 
 export interface IBook extends Required<IBookManagedProps> {
-    borrowBook: (user_id: string) => void;
+    borrowBook: (userId: string) => void;
     returnBook: () => void;
 }
 
@@ -40,8 +40,8 @@ export class Book implements IBook {
         this.borrowedBy = borrowedBy;
     }
 
-    borrowBook(user_id: string): void {
-        this.borrowedBy = user_id;
+    borrowBook(userId: string): void {
+        this.borrowedBy = userId;
         this.isBorrowed = true;
     }
 
@@ -60,8 +60,8 @@ export interface IUserProps {
 export interface IUserManagedProps extends IUserProps, Id {}
 
 export interface IUser extends Required<IUserManagedProps> {
-    borrowBook(book_id: string): void;
-    returnBook(book_id: string): void;
+    borrowBook(bookId: string): void;
+    returnBook(bookId: string): void;
 }
 
 export class User implements IUser {
@@ -76,11 +76,11 @@ export class User implements IUser {
         this.borrowedBooks = borrowedBooks;
     }
 
-    borrowBook(book_id: string): void {
-        this.borrowedBooks.push(book_id);
+    borrowBook(bookId: string): void {
+        this.borrowedBooks.push(bookId);
     }
 
-    returnBook(book_id: string): void {
-        this.borrowedBooks = this.borrowedBooks.filter((id) => id !== book_id);
+    returnBook(bookId: string): void {
+        this.borrowedBooks = this.borrowedBooks.filter((id) => id !== bookId);
     }
 }
