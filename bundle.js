@@ -7429,10 +7429,10 @@ defineJQueryPlugin(Toast);
 
 /***/ }),
 
-/***/ "./libs/custom.css":
-/*!*************************!*\
-  !*** ./libs/custom.css ***!
-  \*************************/
+/***/ "./libs/bootstrap.css":
+/*!****************************!*\
+  !*** ./libs/bootstrap.css ***!
+  \****************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -7974,12 +7974,12 @@ var __webpack_exports__ = {};
   !*** ./src/app.ts ***!
   \********************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _libs_custom_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../libs/custom.css */ "./libs/custom.css");
-/* harmony import */ var _services__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./services */ "./src/services.ts");
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./storage */ "./src/storage.ts");
-/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./validation */ "./src/validation.ts");
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal */ "./src/modal.ts");
-/* harmony import */ var _errors__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./errors */ "./src/errors.ts");
+/* harmony import */ var _services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./services */ "./src/services.ts");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./storage */ "./src/storage.ts");
+/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./validation */ "./src/validation.ts");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal */ "./src/modal.ts");
+/* harmony import */ var _errors__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./errors */ "./src/errors.ts");
+/* harmony import */ var _libs_bootstrap_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../libs/bootstrap.css */ "./libs/bootstrap.css");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8024,14 +8024,14 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 var App = (function () {
     function App() {
-        this.storage = _storage__WEBPACK_IMPORTED_MODULE_2__.Storage.getInstance();
-        this.library = new _services__WEBPACK_IMPORTED_MODULE_1__.LibraryService(this.storage);
+        this.storage = _storage__WEBPACK_IMPORTED_MODULE_1__.Storage.getInstance();
+        this.library = new _services__WEBPACK_IMPORTED_MODULE_0__.LibraryService(this.storage);
         this.bookList = document.getElementById("bookList");
         this.userList = document.getElementById("userList");
         this.addBookForm = document.getElementById("addBookForm");
         this.addUserForm = document.getElementById("addUserForm");
-        this.promptModal = new _modal__WEBPACK_IMPORTED_MODULE_4__.PromptModal("promptModal", ".modal-title", ".modal-body", "input", ".btn-primary", ".btn-secondary");
-        this.alertModal = new _modal__WEBPACK_IMPORTED_MODULE_4__.AlertModal("alertModal", ".modal-title", ".modal-body", ".btn-primary");
+        this.promptModal = new _modal__WEBPACK_IMPORTED_MODULE_3__.PromptModal("promptModal", ".modal-title", ".modal-body", "input", ".btn-primary", ".btn-secondary");
+        this.alertModal = new _modal__WEBPACK_IMPORTED_MODULE_3__.AlertModal("alertModal", ".modal-title", ".modal-body", ".btn-primary");
         this.initEventListeners();
         this.renderBooks();
         this.renderUsers();
@@ -8049,9 +8049,9 @@ var App = (function () {
         var titleInput = document.getElementById("bookTitle");
         var authorInput = document.getElementById("bookAuthor");
         var yearInput = document.getElementById("bookYear");
-        var titleError = _validation__WEBPACK_IMPORTED_MODULE_3__.Validation.BookValidator.validateTitle(titleInput.value);
-        var authorError = _validation__WEBPACK_IMPORTED_MODULE_3__.Validation.BookValidator.validateAuthor(authorInput.value);
-        var yearError = _validation__WEBPACK_IMPORTED_MODULE_3__.Validation.BookValidator.validateYear(yearInput.value);
+        var titleError = _validation__WEBPACK_IMPORTED_MODULE_2__.Validation.BookValidator.validateTitle(titleInput.value);
+        var authorError = _validation__WEBPACK_IMPORTED_MODULE_2__.Validation.BookValidator.validateAuthor(authorInput.value);
+        var yearError = _validation__WEBPACK_IMPORTED_MODULE_2__.Validation.BookValidator.validateYear(yearInput.value);
         this.showValidationErrors({
             bookTitle: titleError,
             bookAuthor: authorError,
@@ -8072,8 +8072,8 @@ var App = (function () {
         event.preventDefault();
         var nameInput = document.getElementById("userName");
         var emailInput = document.getElementById("userEmail");
-        var nameError = _validation__WEBPACK_IMPORTED_MODULE_3__.Validation.UserValidator.validateName(nameInput.value);
-        var emailError = _validation__WEBPACK_IMPORTED_MODULE_3__.Validation.UserValidator.validateEmail(emailInput.value);
+        var nameError = _validation__WEBPACK_IMPORTED_MODULE_2__.Validation.UserValidator.validateName(nameInput.value);
+        var emailError = _validation__WEBPACK_IMPORTED_MODULE_2__.Validation.UserValidator.validateEmail(emailInput.value);
         this.showValidationErrors({
             userName: nameError,
             userEmail: emailError,
@@ -8195,7 +8195,7 @@ var App = (function () {
         this.renderBooks();
     };
     App.prototype.handleError = function (e) {
-        if (e instanceof _errors__WEBPACK_IMPORTED_MODULE_5__.LibraryServiceError) {
+        if (e instanceof _errors__WEBPACK_IMPORTED_MODULE_4__.LibraryServiceError) {
             this.alertModal.show(e.message);
         }
         else {
