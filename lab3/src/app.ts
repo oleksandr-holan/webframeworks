@@ -9,8 +9,8 @@ import "../libs/bootstrap.css";
 class App {
   private library: LibraryService;
   private storage: Storage;
-  private bookList: HTMLElement;
-  private userList: HTMLElement;
+  private bookList: HTMLUListElement;
+  private userList: HTMLUListElement;
   private addBookForm: HTMLFormElement;
   private addUserForm: HTMLFormElement;
   private promptModal: PromptModal;
@@ -23,8 +23,8 @@ class App {
 
     this.library = new LibraryService(this.storage);
 
-    this.bookList = document.getElementById("bookList") as HTMLElement;
-    this.userList = document.getElementById("userList") as HTMLElement;
+    this.bookList = document.getElementById("bookList") as HTMLUListElement;
+    this.userList = document.getElementById("userList") as HTMLUListElement;
     this.addBookForm = document.getElementById(
       "addBookForm",
     ) as HTMLFormElement;
@@ -145,17 +145,14 @@ class App {
     this.addUserForm.reset();
   }
 
-  private showValidationErrors(errors: { [key: string]: string | null }): void {
+  private showValidationErrors(errors: Record<string, string | null>): void {
     for (const [field, error] of Object.entries(errors)) {
       const inputElement = document.getElementById(field) as HTMLInputElement;
       const feedbackElement = inputElement.nextElementSibling as HTMLElement;
 
       if (error) {
         inputElement.classList.add("is-invalid");
-        if (
-          feedbackElement &&
-          feedbackElement.classList.contains("invalid-feedback")
-        ) {
+        if (feedbackElement.classList.contains("invalid-feedback")) {
           feedbackElement.textContent = error;
         }
       } else {
@@ -165,9 +162,10 @@ class App {
     }
   }
 
-  private renderBooks(searchTerm: string = ""): void {
+  private renderBooks(searchTerm = ""): void {
     this.bookList.innerHTML = "";
     const filteredBooks = this.library.searchBooks(searchTerm);
+    const idDataAttribute = "data-id";
 
     if (filteredBooks.length === 0) {
       const noResults = document.createElement("li");
@@ -182,15 +180,15 @@ class App {
       bookItem.className =
         "list-group-item d-flex justify-content-between align-items-center";
       bookItem.innerHTML = `
-            ${book.title} by ${book.author} (${book.year})
+            ${book.title} by ${book.author} (${book.year.toFixed(0)})
             <div>
-                <button class="btn btn-primary btn-sm borrow-btn" data-id="${
+                <button class="btn btn-primary btn-sm borrow-btn" ${idDataAttribute}="${
                   book.id
                 }" ${book.isBorrowed ? "disabled" : ""}>Позичити</button>
-                <button class="btn btn-warning btn-sm return-btn" data-id="${
+                <button class="btn btn-warning btn-sm return-btn" ${idDataAttribute}="${
                   book.id
                 }" ${!book.isBorrowed ? "disabled" : ""}>Повернути</button>
-                <button class="btn btn-danger btn-sm delete-book-btn" data-id="${
+                <button class="btn btn-danger btn-sm delete-book-btn" ${idDataAttribute}="${
                   book.id
                 }">Видалити</button>
             </div>
@@ -200,18 +198,32 @@ class App {
 
     document.querySelectorAll(".borrow-btn").forEach((button) => {
       button.addEventListener("click", (event) => {
-        const bookId = (event.target as HTMLButtonElement).getAttribute(
-          "data-id",
-        )!;
-        this.borrowBook(bookId);
+        let bookId;
+        try {
+          bookId = this.getDataAttribute(
+            event.target as HTMLButtonElement,
+            idDataAttribute,
+          );
+        } catch (e) {
+          this.handleError(e);
+          return;
+        }
+        void this.borrowBook(bookId);
       });
     });
 
     document.querySelectorAll(".return-btn").forEach((button) => {
       button.addEventListener("click", (event) => {
-        const bookId = (event.target as HTMLButtonElement).getAttribute(
-          "data-id",
-        )!;
+        let bookId;
+        try {
+          bookId = this.getDataAttribute(
+            event.target as HTMLButtonElement,
+            idDataAttribute,
+          );
+        } catch (e) {
+          this.handleError(e);
+          return;
+        }
 
         this.returnBook(bookId);
       });
@@ -219,15 +231,31 @@ class App {
 
     document.querySelectorAll(".delete-book-btn").forEach((button) => {
       button.addEventListener("click", (event) => {
-        const bookId = (event.target as HTMLButtonElement).getAttribute(
-          "data-id",
-        )!;
+        let bookId;
+        try {
+          bookId = this.getDataAttribute(
+            event.target as HTMLButtonElement,
+            idDataAttribute,
+          );
+        } catch (e) {
+          this.handleError(e);
+          return;
+        }
         this.deleteBook(bookId);
       });
     });
   }
 
+  private getDataAttribute(elm: HTMLElement, attribute: string) {
+    const attr = elm.getAttribute(attribute);
+    if (!attr) {
+      throw new Error(`Атрибут ${attribute} не встановлено!`);
+    }
+    return attr;
+  }
+
   private renderUsers(): void {
+    const idDataAttribute = "data-id";
     this.userList.innerHTML = "";
     this.library.users.items.forEach((user) => {
       const userItem = document.createElement("li");
@@ -235,16 +263,23 @@ class App {
         "list-group-item d-flex justify-content-between align-items-center";
       userItem.innerHTML = `
             ${user.id} ${user.name} (${user.email})
-            <button class="btn btn-danger btn-sm delete-user-btn" data-id="${user.id}">Видалити</button>
+            <button class="btn btn-danger btn-sm delete-user-btn" ${idDataAttribute}="${user.id}">Видалити</button>
         `;
       this.userList.appendChild(userItem);
     });
 
     document.querySelectorAll(".delete-user-btn").forEach((button) => {
       button.addEventListener("click", (event) => {
-        const userId = (event.target as HTMLButtonElement).getAttribute(
-          "data-id",
-        )!;
+        let userId;
+        try {
+          userId = this.getDataAttribute(
+            event.target as HTMLButtonElement,
+            idDataAttribute,
+          );
+        } catch (e) {
+          this.handleError(e);
+          return;
+        }
         this.deleteUser(userId);
       });
     });
