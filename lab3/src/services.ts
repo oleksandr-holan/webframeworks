@@ -123,4 +123,24 @@ export class LibraryService {
         this.users.clear();
         this.saveData();
     }
+
+    deleteBook(bookId: string): void {
+        const book = this.getBookById(bookId);
+        if (book.isBorrowed) {
+            throw new LibraryServiceError("Не можна видалити позичену книгу.");
+        }
+        this.books.remove(book);
+        this.saveData();
+    }
+
+    deleteUser(userId: string): void {
+        const user = this.getUserById(userId);
+        if (user.borrowedBooks.length > 0) {
+            throw new LibraryServiceError(
+                "Не можна видалити користувача, який має позичені книги."
+            );
+        }
+        this.users.remove(user);
+        this.saveData();
+    }
 }

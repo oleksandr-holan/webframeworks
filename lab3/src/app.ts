@@ -5,6 +5,7 @@ import { Validation } from "./validation";
 import { AlertModal, PromptModal } from "./modal";
 import { LibraryServiceError } from "./errors";
 import "../libs/bootstrap.css";
+import { title } from "process";
 
 class App {
     private library: LibraryService;
@@ -176,16 +177,19 @@ class App {
             bookItem.className =
                 "list-group-item d-flex justify-content-between align-items-center";
             bookItem.innerHTML = `
-                ${book.title} by ${book.author} (${book.year})
-                <div>
-                    <button class="btn btn-primary btn-sm borrow-btn" data-id="${
-                        book.id
-                    }" ${book.isBorrowed ? "disabled" : ""}>Позичити</button>
-                    <button class="btn btn-warning btn-sm return-btn" data-id="${
-                        book.id
-                    }" ${!book.isBorrowed ? "disabled" : ""}>Повернути</button>
-                </div>
-            `;
+            ${book.title} by ${book.author} (${book.year})
+            <div>
+                <button class="btn btn-primary btn-sm borrow-btn" data-id="${
+                    book.id
+                }" ${book.isBorrowed ? "disabled" : ""}>Позичити</button>
+                <button class="btn btn-warning btn-sm return-btn" data-id="${
+                    book.id
+                }" ${!book.isBorrowed ? "disabled" : ""}>Повернути</button>
+                <button class="btn btn-danger btn-sm delete-book-btn" data-id="${
+                    book.id
+                }">Видалити</button>
+            </div>
+        `;
             this.bookList.appendChild(bookItem);
         });
 
@@ -207,15 +211,37 @@ class App {
                 this.returnBook(bookId);
             });
         });
+
+        document.querySelectorAll(".delete-book-btn").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                const bookId = (event.target as HTMLButtonElement).getAttribute(
+                    "data-id"
+                )!;
+                this.deleteBook(bookId);
+            });
+        });
     }
 
     private renderUsers(): void {
         this.userList.innerHTML = "";
         this.library.users.items.forEach((user) => {
             const userItem = document.createElement("li");
-            userItem.className = "list-group-item";
-            userItem.textContent = `${user.id} ${user.name} (${user.email})`;
+            userItem.className =
+                "list-group-item d-flex justify-content-between align-items-center";
+            userItem.innerHTML = `
+            ${user.id} ${user.name} (${user.email})
+            <button class="btn btn-danger btn-sm delete-user-btn" data-id="${user.id}">Видалити</button>
+        `;
             this.userList.appendChild(userItem);
+        });
+
+        document.querySelectorAll(".delete-user-btn").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                const userId = (event.target as HTMLButtonElement).getAttribute(
+                    "data-id"
+                )!;
+                this.deleteUser(userId);
+            });
         });
     }
 
@@ -279,6 +305,24 @@ class App {
     private clearUsers(): void {
         this.library.clearUsers();
         this.renderUsers();
+    }
+
+    private deleteBook(bookId: string): void {
+        try {
+            this.library.deleteBook(bookId);
+            this.renderBooks();
+        } catch (e) {
+            this.handleError(e);
+        }
+    }
+
+    private deleteUser(userId: string): void {
+        try {
+            this.library.deleteUser(userId);
+            this.renderUsers();
+        } catch (e) {
+            this.handleError(e);
+        }
     }
 }
 
