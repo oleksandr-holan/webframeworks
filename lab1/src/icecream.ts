@@ -52,75 +52,66 @@ function isValidEnumValue<T extends { [key: string]: string }>(
     return Object.values(enumObject).includes(input as T[keyof T]);
 }
 
-let sizeInput: string | null;
-let toppingsInput: string | null;
-let toppingsArray: string[];
-let marshmallowInput: string | null;
+function getValidatedInput<T extends { [key: string]: string }>(
+    promptMessage: string,
+    enumObject: T,
+    errorMessage: string,
+    additionalValidation?: (input: string) => boolean,
+    additionalErrorMessage?: string
+): T[keyof T] {
+    while (true) {
+        const input = prompt(promptMessage);
+        if (!input) {
+            alert("Please, say something, I can't read your mind");
+            continue;
+        }
 
-while (true) {
-    sizeInput = prompt("Choose a cup size (small or large):");
+        const trimmedInput = input.toLowerCase().trim();
+        if (!isValidEnumValue(trimmedInput, enumObject)) {
+            alert(errorMessage);
+            continue;
+        }
 
-    if (!sizeInput) {
-        alert("Please, say something, I can't read your mind");
-        continue;
+        if (additionalValidation && !additionalValidation(trimmedInput)) {
+            alert(additionalErrorMessage || "Invalid input");
+            continue;
+        }
+
+        return trimmedInput as T[keyof T];
     }
-    sizeInput = sizeInput.toLowerCase().trim();
-    if (!isValidEnumValue(sizeInput, Size)) {
-        alert("Sorry, we don't have such cup size");
-        continue;
-    }
-
-    break;
 }
 
-while (true) {
-    toppingsInput = prompt(
-        "What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):"
-    );
-    if (!toppingsInput) {
-        alert("You need to choose at least one available topping");
-        continue;
-    }
+const sizeInput = getValidatedInput(
+    "Choose a cup size (small or large):",
+    Size,
+    "Sorry, we don't have such cup size"
+);
 
-    toppingsArray = toppingsInput
-        .toLowerCase()
-        .split(",")
-        .map((topping) => topping.trim());
-    if (!toppingsArray.every((topping) => isValidEnumValue(topping, Topping))) {
-        alert(
-            "Sorry, we don't have all this toppings right now. Please, choose available ones"
-        );
-        continue;
-    }
+const toppingsInput = getValidatedInput(
+    "What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):",
+    Topping,
+    "Sorry, we don't have all these toppings right now. Please, choose available ones",
+    (input) => {
+        const toppings = input.split(",").map((t) => t.trim());
+        const uniqueToppings = new Set(toppings);
+        return uniqueToppings.size === toppings.length;
+    },
+    "Sorry, we don't currently provide double toppings"
+);
 
-    let toppingsSet = new Set(toppingsArray);
-    if (toppingsSet.size !== toppingsArray.length) {
-        alert("Sorry, we don't currently provide double toppings");
-        continue;
-    }
+const marshmallowInput = getValidatedInput(
+    "Should I add marshmallow? (yes or no):",
+    YesNo,
+    "Sorry, I didn't understand you"
+);
 
-    break;
-}
-
-while (true) {
-    marshmallowInput = prompt("Should I add marshmallow? (yes or no):");
-    if (!marshmallowInput) {
-        alert("Please, say something, I can't read your mind");
-        continue;
-    }
-
-    marshmallowInput = marshmallowInput.toLowerCase().trim();
-    if (!isValidEnumValue(marshmallowInput, YesNo)) {
-        alert("Sorry, I didn't understand you");
-        continue;
-    }
-
-    break;
-}
+const toppingsArray = toppingsInput
+    .split(",")
+    .map((t) => t.trim()) as Topping[];
 
 const totalCost: number = calculateIceCreamCost(
     sizeInput as Size,
-    toppingsArray as Topping[],
+    toppingsArray,
     marshmallowInput as YesNo
 );
 
