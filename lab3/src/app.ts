@@ -5,7 +5,6 @@ import { Validation } from "./validation";
 import { AlertModal, PromptModal } from "./modal";
 import { LibraryServiceError } from "./errors";
 import "../libs/bootstrap.css";
-import { title } from "process";
 
 class App {
     private library: LibraryService;
@@ -16,6 +15,8 @@ class App {
     private addUserForm: HTMLFormElement;
     private promptModal: PromptModal;
     private alertModal: AlertModal;
+    private bookSearchInput: HTMLInputElement;
+    private bookSearchButton: HTMLButtonElement;
 
     constructor() {
         this.storage = Storage.getInstance();
@@ -45,6 +46,12 @@ class App {
             ".modal-body",
             ".btn-primary"
         );
+        this.bookSearchInput = document.getElementById(
+            "bookSearchInput"
+        ) as HTMLInputElement;
+        this.bookSearchButton = document.getElementById(
+            "bookSearchButton"
+        ) as HTMLButtonElement;
 
         this.initEventListeners();
         this.renderBooks();
@@ -69,6 +76,21 @@ class App {
             "clearUsersBtn"
         ) as HTMLButtonElement;
         clearUsersBtn.addEventListener("click", this.clearUsers.bind(this));
+
+        this.bookSearchButton.addEventListener(
+            "click",
+            this.handleBookSearch.bind(this)
+        );
+        this.bookSearchInput.addEventListener("keyup", (event) => {
+            if (event.key === "Enter") {
+                this.handleBookSearch();
+            }
+        });
+    }
+
+    private handleBookSearch(): void {
+        const searchTerm = this.bookSearchInput.value.toLowerCase().trim();
+        this.renderBooks(searchTerm);
     }
 
     private handleAddBook(event: Event): void {
@@ -170,9 +192,19 @@ class App {
         }
     }
 
-    private renderBooks(): void {
+    private renderBooks(searchTerm: string = ""): void {
         this.bookList.innerHTML = "";
-        this.library.books.items.forEach((book) => {
+        const filteredBooks = this.library.searchBooks(searchTerm);
+
+        if (filteredBooks.length === 0) {
+            const noResults = document.createElement("li");
+            noResults.className = "list-group-item";
+            noResults.textContent = "Книг не знайдено";
+            this.bookList.appendChild(noResults);
+            return;
+        }
+
+        filteredBooks.forEach((book) => {
             const bookItem = document.createElement("li");
             bookItem.className =
                 "list-group-item d-flex justify-content-between align-items-center";

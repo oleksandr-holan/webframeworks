@@ -143,4 +143,12 @@ export class LibraryService {
         this.users.remove(user);
         this.saveData();
     }
+
+    searchBooks(searchTerm: string): Book[] {
+        return this.books.items.filter(
+            (book) =>
+                book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                book.author.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
 }
