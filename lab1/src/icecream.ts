@@ -45,16 +45,11 @@ function calculateIceCreamCost(
     return cost;
 }
 
-function isSize(input: string): input is Size {
-    return Object.values(Size).includes(input as Size);
-}
-
-function isTopping(input: string): input is Topping {
-    return Object.values(Topping).includes(input as Topping);
-}
-
-function isYesNo(input: string): input is YesNo {
-    return Object.values(YesNo).includes(input as YesNo);
+function isValidEnumValue<T extends { [key: string]: string }>(
+    input: string,
+    enumObject: T
+): input is T[keyof T] {
+    return Object.values(enumObject).includes(input as T[keyof T]);
 }
 
 let sizeInput: string | null;
@@ -70,7 +65,7 @@ while (true) {
         continue;
     }
     sizeInput = sizeInput.toLowerCase().trim();
-    if (!isSize(sizeInput)) {
+    if (!isValidEnumValue(sizeInput, Size)) {
         alert("Sorry, we don't have such cup size");
         continue;
     }
@@ -91,7 +86,7 @@ while (true) {
         .toLowerCase()
         .split(",")
         .map((topping) => topping.trim());
-    if (!toppingsArray.every(isTopping)) {
+    if (!toppingsArray.every((topping) => isValidEnumValue(topping, Topping))) {
         alert(
             "Sorry, we don't have all this toppings right now. Please, choose available ones"
         );
@@ -115,7 +110,7 @@ while (true) {
     }
 
     marshmallowInput = marshmallowInput.toLowerCase().trim();
-    if (!isYesNo(marshmallowInput)) {
+    if (!isValidEnumValue(marshmallowInput, YesNo)) {
         alert("Sorry, I didn't understand you");
         continue;
     }
@@ -124,9 +119,9 @@ while (true) {
 }
 
 const totalCost: number = calculateIceCreamCost(
-    sizeInput,
-    toppingsArray,
-    marshmallowInput
+    sizeInput as Size,
+    toppingsArray as Topping[],
+    marshmallowInput as YesNo
 );
 
 alert(`The ice cream will cost you ${totalCost} hryvnias`);
