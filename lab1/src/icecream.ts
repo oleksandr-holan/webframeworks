@@ -1,33 +1,37 @@
 enum Size {
     Small = "small",
-    Large = "large"
+    Large = "large",
 }
 
 enum Topping {
     Chocolate = "chocolate",
     Caramel = "caramel",
-    Berries = "berries"
+    Berries = "berries",
 }
 
 enum YesNo {
     Yes = "yes",
-    No = "no"
+    No = "no",
 }
 
 const SizeCosts = {
     [Size.Small]: 10,
-    [Size.Large]: 25
-}
+    [Size.Large]: 25,
+};
 
 const ToppingCosts = {
     [Topping.Chocolate]: 5,
     [Topping.Caramel]: 6,
-    [Topping.Berries]: 10
-}
+    [Topping.Berries]: 10,
+};
 
 const MarshmallowCost = 5;
 
-function calculateIceCreamCost(size: Size, toppings: Topping[], addMarshmallow: YesNo): number {
+function calculateIceCreamCost(
+    size: Size,
+    toppings: Topping[],
+    addMarshmallow: YesNo
+): number {
     let cost = SizeCosts[size];
 
     toppings.forEach((topping) => {
@@ -65,7 +69,7 @@ while (true) {
         alert("Please, say something, I can't read your mind");
         continue;
     }
-    sizeInput = sizeInput.toLowerCase().trim()
+    sizeInput = sizeInput.toLowerCase().trim();
     if (!isSize(sizeInput)) {
         alert("Sorry, we don't have such cup size");
         continue;
@@ -75,15 +79,22 @@ while (true) {
 }
 
 while (true) {
-    toppingsInput = prompt("What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):");
+    toppingsInput = prompt(
+        "What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):"
+    );
     if (!toppingsInput) {
         alert("You need to choose at least one available topping");
         continue;
     }
 
-    toppingsArray = toppingsInput.toLowerCase().split(',').map(topping => topping.trim())
+    toppingsArray = toppingsInput
+        .toLowerCase()
+        .split(",")
+        .map((topping) => topping.trim());
     if (!toppingsArray.every(isTopping)) {
-        alert("Sorry, we don't have all this toppings right now. Please, choose available ones");
+        alert(
+            "Sorry, we don't have all this toppings right now. Please, choose available ones"
+        );
         continue;
     }
 
@@ -112,6 +123,10 @@ while (true) {
     break;
 }
 
-const totalCost: number = calculateIceCreamCost(sizeInput, toppingsArray, marshmallowInput);
+const totalCost: number = calculateIceCreamCost(
+    sizeInput,
+    toppingsArray,
+    marshmallowInput
+);
 
 alert(`The ice cream will cost you ${totalCost} hryvnias`);
