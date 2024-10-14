@@ -7786,6 +7786,28 @@ var LibraryService = (function () {
         this.users.clear();
         this.saveData();
     };
+    LibraryService.prototype.deleteBook = function (bookId) {
+        var book = this.getBookById(bookId);
+        if (book.isBorrowed) {
+            throw new _errors__WEBPACK_IMPORTED_MODULE_2__.LibraryServiceError("Не можна видалити позичену книгу.");
+        }
+        this.books.remove(book);
+        this.saveData();
+    };
+    LibraryService.prototype.deleteUser = function (userId) {
+        var user = this.getUserById(userId);
+        if (user.borrowedBooks.length > 0) {
+            throw new _errors__WEBPACK_IMPORTED_MODULE_2__.LibraryServiceError("Не можна видалити користувача, який має позичені книги.");
+        }
+        this.users.remove(user);
+        this.saveData();
+    };
+    LibraryService.prototype.searchBooks = function (searchTerm) {
+        return this.books.items.filter(function (book) {
+            return book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                book.author.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    };
     return LibraryService;
 }());
 
@@ -8032,17 +8054,30 @@ var App = (function () {
         this.addUserForm = document.getElementById("addUserForm");
         this.promptModal = new _modal__WEBPACK_IMPORTED_MODULE_3__.PromptModal("promptModal", ".modal-title", ".modal-body", "input", ".btn-primary", ".btn-secondary");
         this.alertModal = new _modal__WEBPACK_IMPORTED_MODULE_3__.AlertModal("alertModal", ".modal-title", ".modal-body", ".btn-primary");
+        this.bookSearchInput = document.getElementById("bookSearchInput");
+        this.bookSearchButton = document.getElementById("bookSearchButton");
         this.initEventListeners();
         this.renderBooks();
         this.renderUsers();
     }
     App.prototype.initEventListeners = function () {
+        var _this = this;
         this.addBookForm.addEventListener("submit", this.handleAddBook.bind(this));
         this.addUserForm.addEventListener("submit", this.handleAddUser.bind(this));
         var clearBooksBtn = document.getElementById("clearBooksBtn");
         clearBooksBtn.addEventListener("click", this.clearBooks.bind(this));
         var clearUsersBtn = document.getElementById("clearUsersBtn");
         clearUsersBtn.addEventListener("click", this.clearUsers.bind(this));
+        this.bookSearchButton.addEventListener("click", this.handleBookSearch.bind(this));
+        this.bookSearchInput.addEventListener("keyup", function (event) {
+            if (event.key === "Enter") {
+                _this.handleBookSearch();
+            }
+        });
+    };
+    App.prototype.handleBookSearch = function () {
+        var searchTerm = this.bookSearchInput.value.toLowerCase().trim();
+        this.renderBooks(searchTerm);
     };
     App.prototype.handleAddBook = function (event) {
         event.preventDefault();
@@ -8106,14 +8141,23 @@ var App = (function () {
             }
         }
     };
-    App.prototype.renderBooks = function () {
+    App.prototype.renderBooks = function (searchTerm) {
         var _this = this;
+        if (searchTerm === void 0) { searchTerm = ""; }
         this.bookList.innerHTML = "";
-        this.library.books.items.forEach(function (book) {
+        var filteredBooks = this.library.searchBooks(searchTerm);
+        if (filteredBooks.length === 0) {
+            var noResults = document.createElement("li");
+            noResults.className = "list-group-item";
+            noResults.textContent = "Книг не знайдено";
+            this.bookList.appendChild(noResults);
+            return;
+        }
+        filteredBooks.forEach(function (book) {
             var bookItem = document.createElement("li");
             bookItem.className =
                 "list-group-item d-flex justify-content-between align-items-center";
-            bookItem.innerHTML = "\n                ".concat(book.title, " by ").concat(book.author, " (").concat(book.year, ")\n                <div>\n                    <button class=\"btn btn-primary btn-sm borrow-btn\" data-id=\"").concat(book.id, "\" ").concat(book.isBorrowed ? "disabled" : "", ">\u041F\u043E\u0437\u0438\u0447\u0438\u0442\u0438</button>\n                    <button class=\"btn btn-warning btn-sm return-btn\" data-id=\"").concat(book.id, "\" ").concat(!book.isBorrowed ? "disabled" : "", ">\u041F\u043E\u0432\u0435\u0440\u043D\u0443\u0442\u0438</button>\n                </div>\n            ");
+            bookItem.innerHTML = "\n            ".concat(book.title, " by ").concat(book.author, " (").concat(book.year, ")\n            <div>\n                <button class=\"btn btn-primary btn-sm borrow-btn\" data-id=\"").concat(book.id, "\" ").concat(book.isBorrowed ? "disabled" : "", ">\u041F\u043E\u0437\u0438\u0447\u0438\u0442\u0438</button>\n                <button class=\"btn btn-warning btn-sm return-btn\" data-id=\"").concat(book.id, "\" ").concat(!book.isBorrowed ? "disabled" : "", ">\u041F\u043E\u0432\u0435\u0440\u043D\u0443\u0442\u0438</button>\n                <button class=\"btn btn-danger btn-sm delete-book-btn\" data-id=\"").concat(book.id, "\">\u0412\u0438\u0434\u0430\u043B\u0438\u0442\u0438</button>\n            </div>\n        ");
             _this.bookList.appendChild(bookItem);
         });
         document.querySelectorAll(".borrow-btn").forEach(function (button) {
@@ -8128,15 +8172,28 @@ var App = (function () {
                 _this.returnBook(bookId);
             });
         });
+        document.querySelectorAll(".delete-book-btn").forEach(function (button) {
+            button.addEventListener("click", function (event) {
+                var bookId = event.target.getAttribute("data-id");
+                _this.deleteBook(bookId);
+            });
+        });
     };
     App.prototype.renderUsers = function () {
         var _this = this;
         this.userList.innerHTML = "";
         this.library.users.items.forEach(function (user) {
             var userItem = document.createElement("li");
-            userItem.className = "list-group-item";
-            userItem.textContent = "".concat(user.id, " ").concat(user.name, " (").concat(user.email, ")");
+            userItem.className =
+                "list-group-item d-flex justify-content-between align-items-center";
+            userItem.innerHTML = "\n            ".concat(user.id, " ").concat(user.name, " (").concat(user.email, ")\n            <button class=\"btn btn-danger btn-sm delete-user-btn\" data-id=\"").concat(user.id, "\">\u0412\u0438\u0434\u0430\u043B\u0438\u0442\u0438</button>\n        ");
             _this.userList.appendChild(userItem);
+        });
+        document.querySelectorAll(".delete-user-btn").forEach(function (button) {
+            button.addEventListener("click", function (event) {
+                var userId = event.target.getAttribute("data-id");
+                _this.deleteUser(userId);
+            });
         });
     };
     App.prototype.borrowBook = function (bookId) {
@@ -8210,6 +8267,24 @@ var App = (function () {
     App.prototype.clearUsers = function () {
         this.library.clearUsers();
         this.renderUsers();
+    };
+    App.prototype.deleteBook = function (bookId) {
+        try {
+            this.library.deleteBook(bookId);
+            this.renderBooks();
+        }
+        catch (e) {
+            this.handleError(e);
+        }
+    };
+    App.prototype.deleteUser = function (userId) {
+        try {
+            this.library.deleteUser(userId);
+            this.renderUsers();
+        }
+        catch (e) {
+            this.handleError(e);
+        }
     };
     return App;
 }());
