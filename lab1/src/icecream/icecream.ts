@@ -65,16 +65,18 @@ function validateSingleInput<T extends { [key: string]: string }>(
     return trimmedInput as T[keyof T];
 }
 
-function validateMultipleInputs<T extends { [key: string]: string }>(
-    input: string,
-    enumObject: T,
-    errorMessage: string
-): T[keyof T][] | null {
-    const items = input
+function parseArrayFromString(input: string): string[] {
+    return input
         .toLowerCase()
         .split(",")
         .map((item) => item.trim());
+}
 
+function validateEnumArray<T extends { [key: string]: string }>(
+    items: string[],
+    enumObject: T,
+    errorMessage: string
+): T[keyof T][] | null {
     if (!items.every((item) => isValidEnumValue(item, enumObject))) {
         alert(errorMessage);
         return null;
@@ -117,14 +119,15 @@ const sizeInput = getInput("Choose a cup size (small or large):", (input) =>
 const toppingsInput = getInput(
     "What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):",
     (input) => {
-        const validToppings = validateMultipleInputs(
-            input,
+        const toppingsArray = parseArrayFromString(input);
+        const toppingsEnumArray = validateEnumArray(
+            toppingsArray,
             Topping,
             "Sorry, we don't have all these toppings right now. Please, choose available ones"
         );
-        if (validToppings === null) return null;
+        if (toppingsEnumArray === null) return null;
         return validateNoDuplicates(
-            validToppings,
+            toppingsEnumArray,
             "Sorry, we don't currently provide double toppings"
         );
     }
