@@ -52,67 +52,94 @@ function isValidEnumValue<T extends { [key: string]: string }>(
     return Object.values(enumObject).includes(input as T[keyof T]);
 }
 
-function getValidatedInput<T extends { [key: string]: string }>(
-    promptMessage: string,
+function validateSingleInput<T extends { [key: string]: string }>(
+    input: string,
     enumObject: T,
-    errorMessage: string,
-    additionalValidation?: (input: string) => boolean,
-    additionalErrorMessage?: string
-): T[keyof T] {
+    errorMessage: string
+): T[keyof T] | null {
+    const trimmedInput = input.toLowerCase().trim();
+    if (!isValidEnumValue(trimmedInput, enumObject)) {
+        alert(errorMessage);
+        return null;
+    }
+    return trimmedInput as T[keyof T];
+}
+
+function validateMultipleInputs<T extends { [key: string]: string }>(
+    input: string,
+    enumObject: T,
+    errorMessage: string
+): T[keyof T][] | null {
+    const items = input
+        .toLowerCase()
+        .split(",")
+        .map((item) => item.trim());
+
+    if (!items.every((item) => isValidEnumValue(item, enumObject))) {
+        alert(errorMessage);
+        return null;
+    }
+
+    return items as T[keyof T][];
+}
+
+function validateNoDuplicates<T>(items: T[], errorMessage: string): T[] | null {
+    const uniqueItems = new Set(items);
+    if (uniqueItems.size !== items.length) {
+        alert(errorMessage);
+        return null;
+    }
+    return items;
+}
+
+function getInput<T>(
+    promptMessage: string,
+    validator: (input: string) => T | null,
+    errorMessage: string = "Please, say something, I can't read your mind"
+): T {
     while (true) {
         const input = prompt(promptMessage);
         if (!input) {
-            alert("Please, say something, I can't read your mind");
-            continue;
-        }
-
-        const trimmedInput = input.toLowerCase().trim();
-        if (!isValidEnumValue(trimmedInput, enumObject)) {
             alert(errorMessage);
             continue;
         }
-
-        if (additionalValidation && !additionalValidation(trimmedInput)) {
-            alert(additionalErrorMessage || "Invalid input");
-            continue;
+        const validatedInput = validator(input);
+        if (validatedInput !== null) {
+            return validatedInput;
         }
-
-        return trimmedInput as T[keyof T];
     }
 }
 
-const sizeInput = getValidatedInput(
-    "Choose a cup size (small or large):",
-    Size,
-    "Sorry, we don't have such cup size"
+const sizeInput = getInput("Choose a cup size (small or large):", (input) =>
+    validateSingleInput(input, Size, "Sorry, we don't have such cup size")
 );
 
-const toppingsInput = getValidatedInput(
+const toppingsInput = getInput(
     "What toppings should I add? Separate them by commas (available options: chocolate, caramel, berries):",
-    Topping,
-    "Sorry, we don't have all these toppings right now. Please, choose available ones",
     (input) => {
-        const toppings = input.split(",").map((t) => t.trim());
-        const uniqueToppings = new Set(toppings);
-        return uniqueToppings.size === toppings.length;
-    },
-    "Sorry, we don't currently provide double toppings"
+        const validToppings = validateMultipleInputs(
+            input,
+            Topping,
+            "Sorry, we don't have all these toppings right now. Please, choose available ones"
+        );
+        if (validToppings === null) return null;
+        return validateNoDuplicates(
+            validToppings,
+            "Sorry, we don't currently provide double toppings"
+        );
+    }
 );
 
-const marshmallowInput = getValidatedInput(
+const marshmallowInput = getInput(
     "Should I add marshmallow? (yes or no):",
-    YesNo,
-    "Sorry, I didn't understand you"
+    (input) =>
+        validateSingleInput(input, YesNo, "Sorry, I didn't understand you")
 );
-
-const toppingsArray = toppingsInput
-    .split(",")
-    .map((t) => t.trim()) as Topping[];
 
 const totalCost: number = calculateIceCreamCost(
-    sizeInput as Size,
-    toppingsArray,
-    marshmallowInput as YesNo
+    sizeInput,
+    toppingsInput,
+    marshmallowInput
 );
 
 alert(`The ice cream will cost you ${totalCost} hryvnias`);
