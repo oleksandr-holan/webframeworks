@@ -1,9 +1,9 @@
 import { Modal as BootstrapModal } from "bootstrap";
 
 export class AlertModal {
-  protected modalElement: HTMLElement;
-  protected titleElement: HTMLElement;
-  protected messageElement: HTMLElement;
+  protected modalElement: HTMLDivElement;
+  protected titleElement: HTMLHeadingElement;
+  protected messageElement: HTMLDivElement;
   protected btnPrimaryElement: HTMLButtonElement;
   protected modalInstance: BootstrapModal;
 
@@ -13,12 +13,16 @@ export class AlertModal {
     messageElementSelector: string,
     btnPrimaryElementSelector: string,
   ) {
-    this.modalElement = document.getElementById(modalId)!;
-    this.titleElement = this.querySelector(titleElementSelector)!;
-    this.messageElement = this.querySelector(messageElementSelector)!;
+    this.modalElement = document.getElementById(modalId) as HTMLDivElement;
+    this.titleElement = this.querySelector(
+      titleElementSelector,
+    ) as HTMLHeadingElement;
+    this.messageElement = this.querySelector(
+      messageElementSelector,
+    ) as HTMLDivElement;
     this.btnPrimaryElement = this.querySelector(
       btnPrimaryElementSelector,
-    )! as HTMLButtonElement;
+    ) as HTMLButtonElement;
     this.modalInstance = new BootstrapModal(this.modalElement);
   }
 
@@ -60,14 +64,14 @@ export class PromptModal extends AlertModal {
     );
     this.inputElement = this.querySelector(
       inputElementSelector,
-    )! as HTMLInputElement;
+    ) as HTMLInputElement;
     this.btnSecondaryElement = this.querySelector(
       btnSecondaryElementSelector,
-    )! as HTMLButtonElement;
+    ) as HTMLButtonElement;
   }
 
   addBtnPrimaryEventListener(
-    btnPrimaryListener: (this: HTMLButtonElement, ev: MouseEvent) => any,
+    btnPrimaryListener: (this: HTMLButtonElement, ev: MouseEvent) => unknown,
   ): this {
     this.btnPrimaryElement.addEventListener("click", btnPrimaryListener);
     return this;
@@ -82,9 +86,13 @@ export class PromptModal extends AlertModal {
     return this.btnPrimaryElement.getAttribute(name);
   }
 
-  show(message: string): Promise<string> {
+  show(message: string) {
     this.clearInput();
     super.show(message);
+  }
+
+  prompt(message: string): Promise<string> {
+    this.show(message);
 
     return new Promise((resolve) => {
       const confirmHandler = () => {
@@ -98,9 +106,7 @@ export class PromptModal extends AlertModal {
   }
 
   clearInput(): this {
-    if (this.inputElement) {
-      this.inputElement.value = "";
-    }
+    this.inputElement.value = "";
     return this;
   }
 

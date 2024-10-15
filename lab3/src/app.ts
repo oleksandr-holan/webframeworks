@@ -1,7 +1,8 @@
 import { IBook, IUser } from "./models";
 import { LibraryService } from "./services";
 import { Storage } from "./storage";
-import { Validation } from "./validation";
+import * as UserValidator from "./validation/UserValidator";
+import * as BookValidator from "./validation/BookValidator";
 import { AlertModal, PromptModal } from "./modal";
 import { LibraryServiceError } from "./errors";
 import "../libs/bootstrap.css";
@@ -95,11 +96,9 @@ class App {
     ) as HTMLInputElement;
     const yearInput = document.getElementById("bookYear") as HTMLInputElement;
 
-    const titleError = Validation.BookValidator.validateTitle(titleInput.value);
-    const authorError = Validation.BookValidator.validateAuthor(
-      authorInput.value,
-    );
-    const yearError = Validation.BookValidator.validateYear(yearInput.value);
+    const titleError = BookValidator.validateTitle(titleInput.value);
+    const authorError = BookValidator.validateAuthor(authorInput.value);
+    const yearError = BookValidator.validateYear(yearInput.value);
 
     this.showValidationErrors({
       bookTitle: titleError,
@@ -125,8 +124,8 @@ class App {
     const nameInput = document.getElementById("userName") as HTMLInputElement;
     const emailInput = document.getElementById("userEmail") as HTMLInputElement;
 
-    const nameError = Validation.UserValidator.validateName(nameInput.value);
-    const emailError = Validation.UserValidator.validateEmail(emailInput.value);
+    const nameError = UserValidator.validateName(nameInput.value);
+    const emailError = UserValidator.validateEmail(emailInput.value);
 
     this.showValidationErrors({
       userName: nameError,
@@ -286,20 +285,17 @@ class App {
   }
 
   private async borrowBook(bookId: string): Promise<void> {
-    try {
-      const userId = await this.promptModal.show(
-        "Введіть ID користувача, який позичає книгу:",
-      );
-      await this.confirmBorrowBook(bookId, userId);
-    } catch (error) {
-      this.alertModal.show((error as Error).message);
-    }
+    // try {
+    const userId = await this.promptModal.prompt(
+      "Введіть ID користувача, який позичає книгу:",
+    );
+    this.confirmBorrowBook(bookId, userId);
+    // } catch (error) {
+    //   this.alertModal.show((error as Error).message);
+    // }
   }
 
-  private async confirmBorrowBook(
-    bookId: string,
-    userId: string,
-  ): Promise<void> {
+  private confirmBorrowBook(bookId: string, userId: string): void {
     let book: IBook;
     let user: IUser;
 
