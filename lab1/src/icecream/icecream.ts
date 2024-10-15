@@ -1,3 +1,5 @@
+// Instead of this structure
+
 enum Size {
     Small = "small",
     Large = "large",
@@ -27,6 +29,28 @@ const ToppingCosts = {
 
 const MarshmallowCost = 5;
 
+// Make the code to work with structure
+
+interface Product {
+    readonly name: string;
+    readonly price: number;
+}
+
+const toppings: Product[] = [
+    { name: "chocolate", price: 5 },
+    { name: "caramel", price: 6 },
+    { name: "berries", price: 10 },
+];
+
+const sizes: Product[] = [
+    { name: "small", price: 10 },
+    { name: "large", price: 25 },
+];
+
+const supplements: Product[] = [{ name: "marshmallow", price: 5 }];
+
+///////////////////////////////////////////////////////////////////
+
 function calculateIceCreamCost(
     size: Size,
     toppings: Topping[],
@@ -52,7 +76,7 @@ function isValidEnumValue<T extends { [key: string]: string }>(
     return Object.values(enumObject).includes(input as T[keyof T]);
 }
 
-function validateSingleInput<T extends { [key: string]: string }>(
+function validateEnumValue<T extends { [key: string]: string }>(
     input: string,
     enumObject: T,
     errorMessage: string
@@ -63,13 +87,6 @@ function validateSingleInput<T extends { [key: string]: string }>(
         return null;
     }
     return trimmedInput as T[keyof T];
-}
-
-function parseArrayFromString(input: string): string[] {
-    return input
-        .toLowerCase()
-        .split(",")
-        .map((item) => item.trim());
 }
 
 function validateEnumArray<T extends { [key: string]: string }>(
@@ -83,6 +100,13 @@ function validateEnumArray<T extends { [key: string]: string }>(
     }
 
     return items as T[keyof T][];
+}
+
+function parseArrayFromString(input: string): string[] {
+    return input
+        .toLowerCase()
+        .split(",")
+        .map((item) => item.trim());
 }
 
 function validateNoDuplicates<T>(items: T[], errorMessage: string): T[] | null {
@@ -113,7 +137,7 @@ function getInput<T>(
 }
 
 const sizeInput = getInput("Choose a cup size (small or large):", (input) =>
-    validateSingleInput(input, Size, "Sorry, we don't have such cup size")
+    validateEnumValue(input, Size, "Sorry, we don't have such cup size")
 );
 
 const toppingsInput = getInput(
@@ -135,8 +159,7 @@ const toppingsInput = getInput(
 
 const marshmallowInput = getInput(
     "Should I add marshmallow? (yes or no):",
-    (input) =>
-        validateSingleInput(input, YesNo, "Sorry, I didn't understand you")
+    (input) => validateEnumValue(input, YesNo, "Sorry, I didn't understand you")
 );
 
 const totalCost: number = calculateIceCreamCost(
