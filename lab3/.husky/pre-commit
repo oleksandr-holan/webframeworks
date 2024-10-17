@@ -1,0 +1,3 @@
+cd lab3
+npx eslint .
+npm test
