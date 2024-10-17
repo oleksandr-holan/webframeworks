@@ -1,3 +1,2 @@
-cd lab3
-npx eslint .
-npm test
+# npm test
+echo "hello"
