@@ -9,7 +9,10 @@ export function validateEmail(email: string): string | null {
   if (!email.trim()) {
     return "Уведіть еmail адресу користувача";
   }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const emailRegex =
+    /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
+
   if (!emailRegex.test(email)) {
     return "Email адреса некоректна";
   }
