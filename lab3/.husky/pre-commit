@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd lab3 || exit 1
 # npm test
