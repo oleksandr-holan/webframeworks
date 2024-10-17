@@ -1,5 +1,6 @@
 #!/bin/sh
 
 cd lab3 || exit 1
-# npm test
-echo "hello"
+
+npx eslint .
+npm test
