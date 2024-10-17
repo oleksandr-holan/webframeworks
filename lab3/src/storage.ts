@@ -1,36 +1,34 @@
 export interface IStorage {
-  setItem(key: string, data: any): void;
-  getItem(key: string): any;
+  setItem(key: string, data: unknown): void;
+  getItem(key: string): unknown;
   removeItem(key: string): void;
   clear(): void;
 }
 
 export class Storage implements IStorage {
-    private static instance: Storage;
+  private static instance?: Storage;
 
-    private constructor() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() {}
 
-    public static getInstance(): Storage {
-        if (!Storage.instance) {
-            Storage.instance = new Storage();
-        }
-        return Storage.instance;
-    }
+  public static getInstance(): Storage {
+    return this.instance ?? (this.instance = new this());
+  }
 
-    setItem(key: string, data: any): void {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
+  setItem(key: string, data: unknown): void {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
 
-    getItem(key: string): any {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    }
+  getItem(key: string): unknown {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  }
 
-    removeItem(key: string): void {
-        localStorage.removeItem(key);
-    }
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
+  }
 
-    clear(): void {
-        localStorage.clear();
-    }
+  clear(): void {
+    localStorage.clear();
+  }
 }
