@@ -1,5 +1,5 @@
 <template>
-  <li class="user-card">
+  <li class="user-card" :class="{ underage: isUnderage }">
     <img
       :src="props.userData.photo"
       :alt="props.userData.firstName"
@@ -8,9 +8,7 @@
     <div class="user-info">
       <h2>{{ props.userData.firstName }} {{ props.userData.lastName }}</h2>
       <p><strong>Gender:</strong> {{ props.userData.gender }}</p>
-      <p v-if="userData.age && userData.age >= 18">
-        <strong>Age:</strong> {{ props.userData.age }}
-      </p>
+      <p v-if="!isUnderage"><strong>Age:</strong> {{ props.userData.age }}</p>
       <p><strong>Position:</strong> {{ props.userData.position }}</p>
       <div class="hobbies">
         <strong>Hobbies:</strong>
@@ -26,8 +24,12 @@
 
 <script lang="ts" setup>
 import type { UserData } from '@/types/UserData'
+import { computed } from 'vue'
 
 const props = defineProps<{ userData: UserData }>()
+const isUnderage = computed(
+  () => props.userData.age !== undefined && props.userData.age < 18,
+)
 </script>
 
 <style scoped>
@@ -40,12 +42,17 @@ const props = defineProps<{ userData: UserData }>()
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition:
     box-shadow 0.3s ease,
-    border-color 0.3s ease;
+    border-color 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .user-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-color: var(--color-border-hover);
+}
+
+.user-card.underage {
+  background-color: var(--color-underage);
 }
 
 .user-photo {

@@ -39,6 +39,8 @@
   --color-button-text: var(--vt-c-text-light-1);
   --color-button-text-active: var(--vt-c-white);
 
+  --color-underage: rgba(255, 0, 0, 0.1);
+
   --section-gap: 160px;
 }
 
@@ -59,6 +61,8 @@
     --color-button-active: var(--vt-c-indigo);
     --color-button-text: var(--vt-c-text-dark-1);
     --color-button-text-active: var(--vt-c-white);
+
+    --color-underage: rgba(255, 0, 0, 0.15);
   }
 }
 
