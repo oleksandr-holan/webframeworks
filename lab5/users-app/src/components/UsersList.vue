@@ -1,5 +1,5 @@
 <template>
-  <div class="list-container">
+  <div class="list-container" v-if="items.length !== 0">
     <div class="filter-buttons">
       <button @click="gender = 'male'" :class="{ active: gender === 'male' }">
         Male
@@ -15,10 +15,15 @@
       </button>
     </div>
     <ul class="user-list">
-      <template v-for="item in filteredItems" :key="item.id">
-        <UserItem :user-data="item"></UserItem>
-      </template>
+      <UserItem
+        v-for="item in filteredItems"
+        :key="item.id"
+        :user-data="item"
+      ></UserItem>
     </ul>
+  </div>
+  <div v-else class="no-list-items">
+    <p><strong>There is no users</strong></p>
   </div>
 </template>
 
