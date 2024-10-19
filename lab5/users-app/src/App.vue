@@ -1,27 +1,16 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="./assets/logo.svg"
-      width="125"
-      height="125"
-    />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
   <main>
-    <TheWelcome />
+    <ListItem :items="usersList" />
   </main>
 </template>
+
+<script setup lang="ts">
+import ListItem from '@/components/ListItem.vue'
+import { generateUsers } from '@/api/UserDataFaker'
+import { ref } from 'vue'
+
+const usersList = ref(generateUsers(10))
+</script>
 
 <style scoped>
 header {
