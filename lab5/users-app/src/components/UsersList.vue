@@ -31,7 +31,9 @@ const gender = ref('')
 const props = defineProps<{ items: UserData[] }>()
 
 const filteredItems = computed(() => {
-  return props.items.filter(user => user.gender === gender.value)
+  return gender.value
+    ? props.items.filter(user => user.gender === gender.value)
+    : props.items
 })
 </script>
 
@@ -49,18 +51,21 @@ const filteredItems = computed(() => {
 }
 
 .filter-buttons button {
-  background-color: #f0f0f0;
-  border: none;
+  background-color: var(--color-button);
+  color: var(--color-button-text);
+  border: 1px solid var(--color-border);
   padding: 10px 20px;
   margin: 0 5px;
   cursor: pointer;
   border-radius: 5px;
-  transition: background-color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .filter-buttons button.active {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--color-button-active);
+  color: var(--color-button-text-active);
 }
 
 .user-list {

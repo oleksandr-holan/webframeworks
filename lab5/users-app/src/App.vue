@@ -1,11 +1,11 @@
 <template>
   <main>
-    <ListItem :items="usersList" />
+    <UsersList :items="usersList" />
   </main>
 </template>
 
 <script setup lang="ts">
-import ListItem from '@/components/ListItem.vue'
+import UsersList from '@/components/UsersList.vue'
 import { generateUsers } from '@/api/UserDataFaker'
 import { ref } from 'vue'
 
