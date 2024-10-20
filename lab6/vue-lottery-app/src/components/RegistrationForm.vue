@@ -1,7 +1,9 @@
 <template>
   <div class="card mb-4">
     <div class="card-body">
-      <h5 class="card-title text-uppercase"><strong>Register form</strong></h5>
+      <h5 class="card-title text-uppercase">
+        <strong>Registration form</strong>
+      </h5>
       <p class="card-text">Please fill in all the fields.</p>
       <form @submit.prevent="props.onSubmit">
         <div class="mb-3">

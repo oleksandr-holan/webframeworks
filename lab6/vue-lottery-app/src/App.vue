@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RegisterForm from './components/RegisterForm.vue'
+import RegistrationForm from './components/RegistrationForm.vue'
 import WinnersBlock from './components/WinnersBlock.vue'
 import UsersTable from './components/UsersTable.vue'
 </script>
@@ -7,7 +7,7 @@ import UsersTable from './components/UsersTable.vue'
 <template>
   <div class="container mt-5 custom-container">
     <WinnersBlock />
-    <RegisterForm />
+    <RegistrationForm />
     <UsersTable />
   </div>
 </template>
