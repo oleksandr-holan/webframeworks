@@ -1,14 +1,228 @@
 <script setup lang="ts">
-import RegistrationForm from './components/RegistrationForm.vue'
-import WinnersBlock from './components/WinnersBlock.vue'
-import UsersTable from './components/UsersTable.vue'
+import { ref, useTemplateRef, computed } from 'vue'
+import type { IUser } from '@/models/User'
+import * as Validator from '@/validations/UserValidations'
+
+const users = ref<IUser[]>([])
+const loosers = computed(() => {
+  return users.value.map(user => user.name)
+})
+const winners = ref<string[]>([])
+const newUser = ref<IUser>(initUser())
+const errors = ref<IUser>(initUser())
+const wasValidated = ref(false)
+const userForm = useTemplateRef('userForm')
+const userFormInputs = {
+  name: useTemplateRef('userFormInputs.name'),
+  email: useTemplateRef('userFormInputs.email'),
+  dateOfBirth: useTemplateRef('userFormInputs.dateOfBirth'),
+  phone: useTemplateRef('userFormInputs.phone'),
+}
+
+function getNewWinner() {
+  const winnerIndex = Math.floor(Math.random() * loosers.value.length)
+  winners.value.push(loosers.value[winnerIndex])
+  loosers.value.splice(winnerIndex, 1)
+}
+
+function removeWinner(username: string) {
+  winners.value.filter(winner => username !== winner)
+  loosers.value.push(username)
+}
+
+function initUser(): IUser {
+  return {
+    name: '',
+    email: '',
+    dateOfBirth: '',
+    phone: '',
+  }
+}
+
+const validateForm = () => {
+  Object.assign(errors, initUser())
+
+  if (!Validator.isNotEmpty(newUser.value.name)) {
+    errors.value.name = 'Name is required'
+    userFormInputs.name.value?.setCustomValidity(errors.value.name)
+  }
+
+  if (!Validator.isNotEmpty(newUser.value.email)) {
+    errors.value.email = 'Email is required'
+    userFormInputs.email.value?.setCustomValidity(errors.value.email)
+  } else if (!Validator.isValidEmail(newUser.value.email)) {
+    errors.value.email = 'Invalid email format'
+    userFormInputs.email.value?.setCustomValidity(errors.value.email)
+  }
+
+  if (!Validator.isNotEmpty(newUser.value.dateOfBirth)) {
+    errors.value.dateOfBirth = 'Date of Birth is required'
+    userFormInputs.dateOfBirth.value?.setCustomValidity(
+      errors.value.dateOfBirth,
+    )
+  } else if (!Validator.isDateInPast(newUser.value.dateOfBirth)) {
+    errors.value.dateOfBirth = 'Date of birth cannot be in the future'
+    userFormInputs.dateOfBirth.value?.setCustomValidity(
+      errors.value.dateOfBirth,
+    )
+  }
+
+  if (!Validator.isNotEmpty(newUser.value.phone)) {
+    errors.value.phone = 'Phone number is required'
+    userFormInputs.phone.value?.setCustomValidity(errors.value.phone)
+  } else if (!Validator.isValidPhone(newUser.value.phone)) {
+    errors.value.phone = 'Invalid phone number format'
+    userFormInputs.phone.value?.setCustomValidity(errors.value.phone)
+  }
+  return userForm.value?.checkValidity()
+}
+
+function resetForm() {
+  Object.assign(newUser, initUser())
+  Object.assign(errors, initUser())
+  wasValidated.value = false
+}
+
+function submitForm() {
+  if (validateForm()) {
+    resetForm()
+    return
+  }
+  wasValidated.value = true
+}
 </script>
 
 <template>
   <div class="container mt-5 custom-container">
-    <WinnersBlock />
-    <RegistrationForm />
-    <UsersTable />
+    <!-- Winners Block  -->
+    <div class="mb-4">
+      <div class="input-group">
+        <div
+          class="bg-white border rounded-start p-2 d-flex align-items-center flex-grow-1"
+        >
+          <ul class="list-unstyled m-0 d-flex flex-wrap gap-2">
+            <li v-for="winner in winners" :key="winner">
+              <span class="badge bg-info text-dark d-flex align-items-center">
+                {{ winner }}
+                <button
+                  type="button"
+                  class="btn-close btn-close-white ms-2"
+                  aria-label="Close"
+                  @click="removeWinner(winner)"
+                ></button>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <button class="btn btn-primary" type="button" @click="getNewWinner">
+          New winner
+        </button>
+      </div>
+    </div>
+    <!-- Registration form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title text-uppercase">
+          <strong>Registration form</strong>
+        </h5>
+        <p class="card-text">Please fill in all the fields.</p>
+        <form
+          ref="userForm"
+          class="needs-validation"
+          :class="{ 'was-validated': wasValidated }"
+          @submit.prevent.stop="submitForm"
+          novalidate
+        >
+          <div class="mb-3">
+            <label for="name" class="form-label"><strong>Name</strong></label>
+            <input
+              ref="userFormInputs.name"
+              type="text"
+              class="form-control"
+              id="name"
+              v-model="newUser.name"
+              placeholder="Enter user name"
+            />
+            <div class="invalid-feedback">
+              {{ userFormInputs.name.value?.validationMessage }}
+            </div>
+            <div class="valid-feedback">Looks good!</div>
+          </div>
+          <div class="mb-3">
+            <label for="dob" class="form-label"
+              ><strong>Date of Birth</strong></label
+            >
+            <input
+              ref="userFormInputs.dateOfBirth"
+              type="date"
+              class="form-control"
+              id="dob"
+              v-model="newUser.dateOfBirth"
+            />
+            <div class="invalid-feedback" v-if="errors.dateOfBirth">
+              {{ userFormInputs.dateOfBirth.value?.validationMessage }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label"><strong>Email</strong></label>
+            <input
+              ref="userFormInputs.email"
+              type="email"
+              class="form-control"
+              id="email"
+              v-model="newUser.email"
+              placeholder="Enter email"
+            />
+            <div class="invalid-feedback" v-if="errors.email">
+              {{ userFormInputs.email.value?.validationMessage }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label"
+              ><strong>Phone number</strong></label
+            >
+            <input
+              ref="userFormInputs.phone"
+              type="tel"
+              class="form-control"
+              id="phone"
+              v-model="newUser.phone"
+              placeholder="Enter Phone number"
+            />
+            <div class="invalid-feedback" v-if="errors.phone">
+              {{ userFormInputs.phone.value?.validationMessage }}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Date of Birth</th>
+              <th>Email</th>
+              <th>Phone number</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(user, index) in users" :key="index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.dateOfBirth }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phone }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
