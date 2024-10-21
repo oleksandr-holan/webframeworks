@@ -3,6 +3,7 @@ import { ref, useTemplateRef, computed } from 'vue'
 import type { IUser } from '@/models/User'
 import * as Validator from '@/validations/UserValidations'
 import { faker } from '@faker-js/faker'
+import type { ValidationRules } from '@/types/validation'
 
 // TODO: adjust winner pill width according to the name length
 const users = ref<IUser[]>([])
@@ -11,7 +12,6 @@ const loosers = computed(() => {
 })
 const winners = ref<string[]>([])
 const newUser = ref<IUser>(initEmptyUser())
-const errors = ref<IUser>(initEmptyUser())
 const wasValidated = ref(false)
 const userForm = useTemplateRef('userForm')
 const userFormInputs = {
@@ -21,9 +21,7 @@ const userFormInputs = {
   phone: useTemplateRef('userFormInputs.phone'),
 }
 const isNewWinnerAvailable = computed(() => {
-  if (winners.value.length >= 3) return false
-  if (!loosers.value.length) return false
-  return true
+  return loosers.value.length && winners.value.length <= 3
 })
 
 function generateRandomUser(): IUser {
@@ -47,7 +45,6 @@ function getNewWinner() {
 }
 
 function removeWinner(username: string) {
-  console.log(username)
   winners.value = winners.value.filter(winner => username !== winner)
   loosers.value.push(username)
 }
@@ -61,42 +58,44 @@ function initEmptyUser(): IUser {
   }
 }
 
-const validateForm = () => {
-  errors.value = initEmptyUser()
+const validationRules: ValidationRules = {
+  name: [{ validator: Validator.isNotEmpty, message: 'Name is required' }],
+  email: [
+    { validator: Validator.isNotEmpty, message: 'Email is required' },
+    { validator: Validator.isValidEmail, message: 'Invalid email format' },
+  ],
+  dateOfBirth: [
+    { validator: Validator.isNotEmpty, message: 'Date of Birth is required' },
+    {
+      validator: Validator.isDateInPast,
+      message: 'Date of birth cannot be in the future',
+    },
+  ],
+  phone: [
+    { validator: Validator.isNotEmpty, message: 'Phone number is required' },
+    {
+      validator: Validator.isValidPhone,
+      message: 'Invalid phone number format',
+    },
+  ],
+}
 
-  if (!Validator.isNotEmpty(newUser.value.name)) {
-    errors.value.name = 'Name is required'
-    userFormInputs.name.value?.setCustomValidity(errors.value.name)
+const validateField = (field: keyof IUser, value: string): string => {
+  for (const rule of validationRules[field]) {
+    if (!rule.validator(value)) {
+      return rule.message
+    }
   }
+  return ''
+}
 
-  if (!Validator.isNotEmpty(newUser.value.email)) {
-    errors.value.email = 'Email is required'
-    userFormInputs.email.value?.setCustomValidity(errors.value.email)
-  } else if (!Validator.isValidEmail(newUser.value.email)) {
-    errors.value.email = 'Invalid email format'
-    userFormInputs.email.value?.setCustomValidity(errors.value.email)
-  }
+const validateForm = (): boolean => {
+  ;(Object.keys(validationRules) as Array<keyof IUser>).forEach(field => {
+    const errorMessage = validateField(field, newUser.value[field])
+    userFormInputs[field].value?.setCustomValidity(errorMessage)
+  })
 
-  if (!Validator.isNotEmpty(newUser.value.dateOfBirth)) {
-    errors.value.dateOfBirth = 'Date of Birth is required'
-    userFormInputs.dateOfBirth.value?.setCustomValidity(
-      errors.value.dateOfBirth,
-    )
-  } else if (!Validator.isDateInPast(newUser.value.dateOfBirth)) {
-    errors.value.dateOfBirth = 'Date of birth cannot be in the future'
-    userFormInputs.dateOfBirth.value?.setCustomValidity(
-      errors.value.dateOfBirth,
-    )
-  }
-
-  if (!Validator.isNotEmpty(newUser.value.phone)) {
-    errors.value.phone = 'Phone number is required'
-    userFormInputs.phone.value?.setCustomValidity(errors.value.phone)
-  } else if (!Validator.isValidPhone(newUser.value.phone)) {
-    errors.value.phone = 'Invalid phone number format'
-    userFormInputs.phone.value?.setCustomValidity(errors.value.phone)
-  }
-  return userForm.value?.checkValidity()
+  return userForm.value?.checkValidity() ?? false
 }
 
 function onSubmit(user: IUser) {
@@ -105,7 +104,6 @@ function onSubmit(user: IUser) {
 
 function resetForm() {
   newUser.value = initEmptyUser()
-  errors.value = initEmptyUser()
   wasValidated.value = false
 }
 
@@ -191,9 +189,10 @@ function submitForm() {
               id="dob"
               v-model="newUser.dateOfBirth"
             />
-            <div class="invalid-feedback" v-if="errors.dateOfBirth">
+            <div class="invalid-feedback">
               {{ userFormInputs.dateOfBirth.value?.validationMessage }}
             </div>
+            <div class="valid-feedback">Looks good!</div>
           </div>
           <div class="mb-3">
             <label for="email" class="form-label"><strong>Email</strong></label>
@@ -205,9 +204,10 @@ function submitForm() {
               v-model="newUser.email"
               placeholder="Enter email"
             />
-            <div class="invalid-feedback" v-if="errors.email">
+            <div class="invalid-feedback">
               {{ userFormInputs.email.value?.validationMessage }}
             </div>
+            <div class="valid-feedback">Looks good!</div>
           </div>
           <div class="mb-3">
             <label for="phone" class="form-label"
@@ -221,9 +221,10 @@ function submitForm() {
               v-model="newUser.phone"
               placeholder="Enter Phone number"
             />
-            <div class="invalid-feedback" v-if="errors.phone">
+            <div class="invalid-feedback">
               {{ userFormInputs.phone.value?.validationMessage }}
             </div>
+            <div class="valid-feedback">Looks good!</div>
           </div>
           <button type="submit" class="btn btn-primary">Save</button>
           <button
