@@ -4,9 +4,9 @@ import {
   IBook,
   IUser,
   IBookProps,
-  IUserManagedProps,
-  IBookManagedProps,
   IUserProps,
+  IBookManagedProps,
+  IUserManagedProps,
 } from "./models";
 import { Library } from "./library";
 import { IStorage } from "./storage";
@@ -16,26 +16,31 @@ export class LibraryService {
   private storage: IStorage;
   public books: Library<Book>;
   public users: Library<User>;
-  private bookIdCounter = 1;
-  private userIdCounter = 1;
+  private bookIdCounter: number;
+  private userIdCounter: number;
 
   constructor(storage: IStorage) {
     this.storage = storage;
 
-    const storedBooks =
-      (this.storage.getItem("books") as IBookManagedProps[]) || [];
+    const parsedBooks = this.storage.getItem("books");
     this.books = new Library<Book>(
-      storedBooks.map((bookData) => new Book(bookData)),
+      ((parsedBooks as IBookManagedProps[] | null) ?? []).map(
+        (bookData) => new Book(bookData),
+      ),
     );
 
-    const storedUsers =
-      (this.storage.getItem("users") as IUserManagedProps[]) || [];
+    const parsedUsers = this.storage.getItem("users");
     this.users = new Library<User>(
-      storedUsers.map((userData) => new User(userData)),
+      ((parsedUsers as IUserManagedProps[] | null) ?? []).map(
+        (userData) => new User(userData),
+      ),
     );
 
-    this.bookIdCounter = this.storage.getItem("bookIdCounter") || 1;
-    this.userIdCounter = this.storage.getItem("userIdCounter") || 1;
+    const bookIdCounter: unknown = this.storage.getItem("bookIdCounter");
+    this.bookIdCounter = typeof bookIdCounter === "number" ? bookIdCounter : 1;
+
+    const userIdCounter: unknown = this.storage.getItem("userIdCounter");
+    this.userIdCounter = typeof userIdCounter === "number" ? userIdCounter : 1;
   }
 
   private saveData(): void {

@@ -1,22 +1,24 @@
 import { describe, it, beforeEach, expect, vi } from "vitest";
 import { LibraryService } from "../src/services";
-import { IBookProps, IUserProps, Book, User } from "../src/models";
+import { IBookProps, IUserProps } from "../src/models";
 import { Context } from "vm";
 import { Storage } from "../src/storage";
 
 declare module "vitest" {
   export interface TestContext {
     sut: LibraryService;
-    storageStub: any;
+    storageStub: Storage;
   }
 }
 
 describe("LibraryService", () => {
   beforeEach<Context>((context) => {
-    context.storageStub = {
+    context.storageStub = vi.mocked({
       getItem: vi.fn(),
       setItem: vi.fn(),
-    };
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    });
     context.sut = new LibraryService(context.storageStub);
   });
 
@@ -27,8 +29,8 @@ describe("LibraryService", () => {
       const sut = new LibraryService(storage);
 
       for (let i = 0; i < 4; i++) {
-        let user = sut.createUser(userMother());
-        let book = sut.createBook(bookMother());
+        const user = sut.createUser(userMother());
+        const book = sut.createBook(bookMother());
         sut.borrowBook(book.id, user.id);
       }
 
@@ -44,7 +46,7 @@ describe("LibraryService", () => {
       storageStub,
     }) => {
       // Arrange
-      storageStub.getItem.mockReturnValue(null);
+      vi.mocked(storageStub).getItem.mockReturnValue(null);
 
       // Act
       const sut = new LibraryService(storageStub);
@@ -84,12 +86,14 @@ describe("LibraryService", () => {
       );
 
       // Act
-      books.slice(0, -1).forEach((book) => sut.borrowBook(book.id, user.id));
+      books.slice(0, -1).forEach((book) => {
+        sut.borrowBook(book.id, user.id);
+      });
 
       // Assert
-      expect(() => sut.borrowBook(books[3].id, user.id)).toThrow(
-        "Не можна позичити більше, ніж три книги.",
-      );
+      expect(() => {
+        sut.borrowBook(books[3].id, user.id);
+      }).toThrow("Не можна позичити більше, ніж три книги.");
     });
   });
 
@@ -114,24 +118,15 @@ describe("LibraryService", () => {
 // Object Mother Methods
 function bookMother(overrides: Partial<IBookProps> = {}): IBookProps {
   return {
-    title: overrides.title || "Default Title",
-    author: overrides.author || "Default Author",
-    year: overrides.year || 2023,
+    title: overrides.title ?? "Default Title",
+    author: overrides.author ?? "Default Author",
+    year: overrides.year ?? 2023,
   };
 }
 
 function userMother(overrides: Partial<IUserProps> = {}): IUserProps {
   return {
-    name: overrides.name || "Default Name",
-    email: overrides.email || "default@example.com",
+    name: overrides.name ?? "Default Name",
+    email: overrides.email ?? "default@example.com",
   };
-}
-
-// Helper functions for creating Book and User instances
-function createBook(id: string): Book {
-  return new Book({ id, ...bookMother() });
-}
-
-function createUser(id: string): User {
-  return new User({ id, ...userMother() });
 }

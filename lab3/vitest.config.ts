@@ -5,5 +5,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    disableConsoleIntercept: false,
+    silent: false,
   },
 });

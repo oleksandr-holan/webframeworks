@@ -9,6 +9,6 @@
     "sourceMap": true,
     "moduleResolution": "Bundler"
   },
-  "include": ["src"],
+  "include": ["src", "*.ts", "tests", "*.js", "*.mjs"],
   "exclude": ["node_modules"]
 }
