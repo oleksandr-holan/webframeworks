@@ -17,3 +17,7 @@ export function isDateInPast(date: string): boolean {
   const currentDate = new Date()
   return inputDate <= currentDate
 }
+
+export function isNotEmpty(s: string): boolean {
+  return s.trim() !== ''
+}
