@@ -1,13 +1,15 @@
-// RegistrationForm.test.ts
 import { render, screen } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
-import { test, expect, vi } from 'vitest'
-import RegistrationForm from '@/components/RegistrationForm.vue'
+import { test, expect } from 'vitest'
+import App from '@/App.vue'
 import '@testing-library/jest-dom/vitest'
+import { faker } from '@faker-js/faker'
 
 test('renders registration form with all fields', () => {
-  render(RegistrationForm)
+  // Arrange and Act
+  render(App)
 
+  // Assert
   expect(screen.getByLabelText('Name')).toBeInTheDocument()
   expect(screen.getByLabelText('Date of Birth')).toBeInTheDocument()
   expect(screen.getByLabelText('Email')).toBeInTheDocument()
@@ -16,7 +18,7 @@ test('renders registration form with all fields', () => {
 })
 
 test('validates required fields', async () => {
-  render(RegistrationForm)
+  render(App)
 
   await userEvent.click(screen.getByRole('button', { name: /save/i }))
 
@@ -27,7 +29,7 @@ test('validates required fields', async () => {
 })
 
 test('validates email format', async () => {
-  render(RegistrationForm)
+  render(App)
 
   await userEvent.type(screen.getByLabelText('Email'), 'invalid-email')
   await userEvent.click(screen.getByText('Save'))
@@ -36,7 +38,7 @@ test('validates email format', async () => {
 })
 
 test('validates phone number format', async () => {
-  render(RegistrationForm)
+  render(App)
 
   await userEvent.type(screen.getByLabelText('Phone number'), '123')
   await userEvent.click(screen.getByText('Save'))
@@ -45,7 +47,7 @@ test('validates phone number format', async () => {
 })
 
 test('validates date of birth is not in the future', async () => {
-  render(RegistrationForm)
+  render(App)
 
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
@@ -60,24 +62,33 @@ test('validates date of birth is not in the future', async () => {
   ).toBeInTheDocument()
 })
 
-test('submits form with valid data', async () => {
-  const mockSubmit = vi.fn()
-  render(RegistrationForm, {
-    props: {
-      onSubmit: mockSubmit,
-    },
-  })
+test('adds new user to the table after form submission', async () => {
+  render(App)
 
-  await userEvent.type(screen.getByLabelText('Name'), 'John Doe')
-  await userEvent.type(screen.getByLabelText('Date of Birth'), '1990-01-01')
-  await userEvent.type(screen.getByLabelText('Email'), 'john@example.com')
-  await userEvent.type(screen.getByLabelText('Phone number'), '1234567890')
+  // Arrange
+  const fakeUser = {
+    name: faker.person.fullName(),
+    dateOfBirth: faker.date.birthdate().toISOString().split('T')[0], // Format: YYYY-MM-DD
+    email: faker.internet.email(),
+    phone: faker.phone.number({ style: 'international' }), // 10-digit number
+  }
+
+  // Act
+  await userEvent.type(screen.getByLabelText('Name'), fakeUser.name)
+  await userEvent.type(
+    screen.getByLabelText('Date of Birth'),
+    fakeUser.dateOfBirth,
+  )
+  await userEvent.type(screen.getByLabelText('Email'), fakeUser.email)
+  await userEvent.type(screen.getByLabelText('Phone number'), fakeUser.phone)
   await userEvent.click(screen.getByText('Save'))
 
-  expect(mockSubmit).toHaveBeenCalledWith({
-    name: 'John Doe',
-    dob: '1990-01-01',
-    email: 'john@example.com',
-    phone: '1234567890',
-  })
+  // Assert
+  const rows = screen.getAllByRole('row')
+  const lastRow = rows[rows.length - 1]
+
+  expect(lastRow).toHaveTextContent(fakeUser.name)
+  expect(lastRow).toHaveTextContent(fakeUser.dateOfBirth)
+  expect(lastRow).toHaveTextContent(fakeUser.email)
+  expect(lastRow).toHaveTextContent(fakeUser.phone)
 })
