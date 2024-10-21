@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
 import { test, expect, vi } from 'vitest'
 import RegistrationForm from '@/components/RegistrationForm.vue'
+import '@testing-library/jest-dom/vitest'
 
 test('renders registration form with all fields', () => {
   render(RegistrationForm)
@@ -17,7 +18,7 @@ test('renders registration form with all fields', () => {
 test('validates required fields', async () => {
   render(RegistrationForm)
 
-  await userEvent.click(screen.getByText('Save'))
+  await userEvent.click(screen.getByRole('button', { name: /save/i }))
 
   expect(screen.getByText('Name is required')).toBeInTheDocument()
   expect(screen.getByText('Date of Birth is required')).toBeInTheDocument()
