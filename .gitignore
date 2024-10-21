@@ -2,3 +2,6 @@ node_modules
 *.json
 dist
 *.xml
+settings.json
+.vscode
+.idea
