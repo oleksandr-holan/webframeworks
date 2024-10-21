@@ -2,14 +2,16 @@
 import { ref, useTemplateRef, computed } from 'vue'
 import type { IUser } from '@/models/User'
 import * as Validator from '@/validations/UserValidations'
+import { faker } from '@faker-js/faker'
 
+// TODO: adjust winner pill width according to the name length
 const users = ref<IUser[]>([])
 const loosers = computed(() => {
   return users.value.map(user => user.name)
 })
 const winners = ref<string[]>([])
-const newUser = ref<IUser>(initUser())
-const errors = ref<IUser>(initUser())
+const newUser = ref<IUser>(initEmptyUser())
+const errors = ref<IUser>(initEmptyUser())
 const wasValidated = ref(false)
 const userForm = useTemplateRef('userForm')
 const userFormInputs = {
@@ -19,6 +21,20 @@ const userFormInputs = {
   phone: useTemplateRef('userFormInputs.phone'),
 }
 
+function generateRandomUser(): IUser {
+  return {
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    dateOfBirth: faker.date.past({ years: 50 }).toISOString().split('T')[0],
+    phone: faker.phone.number({ style: 'international' }),
+  }
+}
+
+function addRandomUser() {
+  const randomUser = generateRandomUser()
+  users.value.push(randomUser)
+}
+
 function getNewWinner() {
   const winnerIndex = Math.floor(Math.random() * loosers.value.length)
   winners.value.push(loosers.value[winnerIndex])
@@ -26,11 +42,12 @@ function getNewWinner() {
 }
 
 function removeWinner(username: string) {
-  winners.value.filter(winner => username !== winner)
+  console.log(username)
+  winners.value = winners.value.filter(winner => username !== winner)
   loosers.value.push(username)
 }
 
-function initUser(): IUser {
+function initEmptyUser(): IUser {
   return {
     name: '',
     email: '',
@@ -40,7 +57,7 @@ function initUser(): IUser {
 }
 
 const validateForm = () => {
-  Object.assign(errors, initUser())
+  errors.value = initEmptyUser()
 
   if (!Validator.isNotEmpty(newUser.value.name)) {
     errors.value.name = 'Name is required'
@@ -77,19 +94,30 @@ const validateForm = () => {
   return userForm.value?.checkValidity()
 }
 
+function onSubmit(user: IUser) {
+  users.value.push(user)
+}
+
 function resetForm() {
-  Object.assign(newUser, initUser())
-  Object.assign(errors, initUser())
+  newUser.value = initEmptyUser()
+  errors.value = initEmptyUser()
   wasValidated.value = false
 }
 
 function submitForm() {
   if (validateForm()) {
+    onSubmit(newUser.value)
     resetForm()
     return
   }
   wasValidated.value = true
 }
+
+const shouldDisableNewWinnerButton = computed(() => {
+  if (winners.value.length >= 3) return true
+  if (!loosers.value.length) return true
+  return false
+})
 </script>
 
 <template>
@@ -106,7 +134,7 @@ function submitForm() {
                 {{ winner }}
                 <button
                   type="button"
-                  class="btn-close btn-close-white ms-2"
+                  class="btn-close ms-2"
                   aria-label="Close"
                   @click="removeWinner(winner)"
                 ></button>
@@ -114,7 +142,12 @@ function submitForm() {
             </li>
           </ul>
         </div>
-        <button class="btn btn-primary" type="button" @click="getNewWinner">
+        <button
+          class="btn btn-primary"
+          type="button"
+          @click="getNewWinner"
+          :disabled="shouldDisableNewWinnerButton"
+        >
           New winner
         </button>
       </div>
@@ -194,6 +227,13 @@ function submitForm() {
             </div>
           </div>
           <button type="submit" class="btn btn-primary">Save</button>
+          <button
+            type="button"
+            class="btn btn-secondary ms-2"
+            @click="addRandomUser"
+          >
+            Add Random User
+          </button>
         </form>
       </div>
     </div>
