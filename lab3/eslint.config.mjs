@@ -4,7 +4,10 @@ import tseslint from "typescript-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
 import vitest from "@vitest/eslint-plugin";
 
-export default [
+export default tseslint.config(
+  {
+    ignores: ["dist/**", "*.{js,mjs}", "*.ts"],
+  },
   // Base configuration for all files
   {
     files: ["**/*.{js,mjs,cjs,ts}"],
@@ -39,4 +42,9 @@ export default [
       "@typescript-eslint/unbound-method": "off",
     },
   },
-];
+
+  {
+    files: ["**/*.{js,mjs}"],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+);
