@@ -20,6 +20,11 @@ const userFormInputs = {
   dateOfBirth: useTemplateRef('userFormInputs.dateOfBirth'),
   phone: useTemplateRef('userFormInputs.phone'),
 }
+const isNewWinnerAvailable = computed(() => {
+  if (winners.value.length >= 3) return false
+  if (!loosers.value.length) return false
+  return true
+})
 
 function generateRandomUser(): IUser {
   return {
@@ -112,12 +117,6 @@ function submitForm() {
   }
   wasValidated.value = true
 }
-
-const shouldDisableNewWinnerButton = computed(() => {
-  if (winners.value.length >= 3) return true
-  if (!loosers.value.length) return true
-  return false
-})
 </script>
 
 <template>
@@ -145,8 +144,8 @@ const shouldDisableNewWinnerButton = computed(() => {
         <button
           class="btn btn-primary"
           type="button"
-          @click="getNewWinner"
-          :disabled="shouldDisableNewWinnerButton"
+          @click="isNewWinnerAvailable && getNewWinner()"
+          :disabled="!isNewWinnerAvailable"
         >
           New winner
         </button>
