@@ -5,10 +5,11 @@ import * as Validator from '@/validations/UserValidations'
 import { faker } from '@faker-js/faker'
 import type { ValidationRules } from '@/types/validation'
 
-// TODO: adjust winner pill width according to the name length
 const users = ref<IUser[]>([])
 const loosers = computed(() => {
-  return users.value.map(user => user.name)
+  return users.value
+    .map(user => user.name)
+    .filter(userName => !winners.value.includes(userName))
 })
 const winners = ref<string[]>([])
 const newUser = ref<IUser>(initEmptyUser())
@@ -20,8 +21,10 @@ const userFormInputs = {
   dateOfBirth: useTemplateRef('userFormInputs.dateOfBirth'),
   phone: useTemplateRef('userFormInputs.phone'),
 }
+const errors = ref(initEmptyUser())
+
 const isNewWinnerAvailable = computed(() => {
-  return loosers.value.length && winners.value.length <= 3
+  return loosers.value.length && winners.value.length < 3
 })
 
 function generateRandomUser(): IUser {
@@ -41,12 +44,10 @@ function addRandomUser() {
 function getNewWinner() {
   const winnerIndex = Math.floor(Math.random() * loosers.value.length)
   winners.value.push(loosers.value[winnerIndex])
-  loosers.value.splice(winnerIndex, 1)
 }
 
 function removeWinner(username: string) {
   winners.value = winners.value.filter(winner => username !== winner)
-  loosers.value.push(username)
 }
 
 function initEmptyUser(): IUser {
@@ -80,7 +81,7 @@ const validationRules: ValidationRules = {
   ],
 }
 
-const validateField = (field: keyof IUser, value: string): string => {
+function validateField(field: keyof IUser, value: string): string {
   for (const rule of validationRules[field]) {
     if (!rule.validator(value)) {
       return rule.message
@@ -89,10 +90,11 @@ const validateField = (field: keyof IUser, value: string): string => {
   return ''
 }
 
-const validateForm = (): boolean => {
+function validateForm(): boolean {
   ;(Object.keys(validationRules) as Array<keyof IUser>).forEach(field => {
-    const errorMessage = validateField(field, newUser.value[field])
-    userFormInputs[field].value?.setCustomValidity(errorMessage)
+    errors.value[field] = validateField(field, newUser.value[field])
+    userFormInputs[field].value?.setCustomValidity(errors.value[field])
+    console.log(userFormInputs[field].value?.validationMessage)
   })
 
   return userForm.value?.checkValidity() ?? false
@@ -125,6 +127,7 @@ function submitForm() {
         <div
           class="bg-white border rounded-start p-2 d-flex align-items-center flex-grow-1"
         >
+          <span class="text-secondary me-2">Winners</span>
           <ul class="list-unstyled m-0 d-flex flex-wrap gap-2">
             <li v-for="winner in winners" :key="winner">
               <span class="badge bg-info text-dark d-flex align-items-center">
@@ -142,7 +145,7 @@ function submitForm() {
         <button
           class="btn btn-primary"
           type="button"
-          @click="isNewWinnerAvailable && getNewWinner()"
+          @click="getNewWinner()"
           :disabled="!isNewWinnerAvailable"
         >
           New winner
@@ -174,9 +177,11 @@ function submitForm() {
               placeholder="Enter user name"
             />
             <div class="invalid-feedback">
-              {{ userFormInputs.name.value?.validationMessage }}
+              {{ errors.name }}
             </div>
-            <div class="valid-feedback">Looks good!</div>
+            <div class="valid-feedback">
+              {{ 'Looks good!' }}
+            </div>
           </div>
           <div class="mb-3">
             <label for="dob" class="form-label"
@@ -190,7 +195,7 @@ function submitForm() {
               v-model="newUser.dateOfBirth"
             />
             <div class="invalid-feedback">
-              {{ userFormInputs.dateOfBirth.value?.validationMessage }}
+              {{ errors.dateOfBirth }}
             </div>
             <div class="valid-feedback">Looks good!</div>
           </div>
@@ -205,7 +210,7 @@ function submitForm() {
               placeholder="Enter email"
             />
             <div class="invalid-feedback">
-              {{ userFormInputs.email.value?.validationMessage }}
+              {{ errors.email }}
             </div>
             <div class="valid-feedback">Looks good!</div>
           </div>
@@ -222,7 +227,7 @@ function submitForm() {
               placeholder="Enter Phone number"
             />
             <div class="invalid-feedback">
-              {{ userFormInputs.phone.value?.validationMessage }}
+              {{ errors.phone }}
             </div>
             <div class="valid-feedback">Looks good!</div>
           </div>
