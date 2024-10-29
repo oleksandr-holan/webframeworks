@@ -92,3 +92,8 @@ test('adds new user to the table after form submission', async () => {
   expect(lastRow).toHaveTextContent(fakeUser.email)
   expect(lastRow).toHaveTextContent(fakeUser.phone)
 })
+
+/* 
+1. sets to valid after invalid
+2. sets invalid message after valid
+*/
