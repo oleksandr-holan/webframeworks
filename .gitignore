@@ -1,4 +1,8 @@
 node_modules
+*.json
 dist
+*.xml
+settings.json
 .vscode
 .vite
+.idea
